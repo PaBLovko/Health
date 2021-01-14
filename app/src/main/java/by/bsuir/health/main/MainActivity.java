@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
         switchEnableBt      = findViewById(R.id.switch_enable_bt);
         btnEnableSearch     = findViewById(R.id.btn_enable_search);
         pbProgress          = findViewById(R.id.pb_progress);
-        listDevices = findViewById(R.id.lv_bt_device);
+        listDevices         = findViewById(R.id.lv_bt_device);
 
         frameLedControls    = findViewById(R.id.frameLedControls);
         btnDisconnect       = findViewById(R.id.btn_disconnect);
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements
         int iconType = R.drawable.ic_bluetooth_bounded_device;
         switch (type) {
             case BT_BOUNDED:
-                bluetoothDevices = getBoundedBtDevices();
+                bluetoothDevices = getBoundedDevices();
                 iconType = R.drawable.ic_bluetooth_bounded_device;
                 break;
             case BT_SEARCH:
@@ -369,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements
         listDevices.setAdapter(listAdapter);
     }
 
-    private ArrayList<BluetoothDevice> getBoundedBtDevices() {
+    private ArrayList<BluetoothDevice> getBoundedDevices() {
         Set<BluetoothDevice> deviceSet = bluetoothAdapter.getBondedDevices();
         ArrayList<BluetoothDevice> tmpArrayList = new ArrayList<>();
         if (deviceSet.size() > 0) {
