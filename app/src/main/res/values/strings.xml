@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Health</string>
+    <string name="bluetooth_on_off">Вкл./Выкл. Bluetooth</string>
+    <string name="bluetooth_off">Bluetooth выключен</string>
+    <string name="start_search">Начать поиск</string>
+    <string name="bluetooth_not_supported">Bluetooth не поддерживается</string>
+    <string name="stop_search">Остановить поиск</string>
+    <string name="disconnect">Отключить</string>
+    <string name="storage">Сохранения</string>
+    <string name="start">Начать</string>
+    <string name="buzzer">Динамик</string>
+    <string name="connecting">Соединение...</string>
+    <string name="please_wait">Подождите, пожалуйста...</string>
+    <string name="led">Светодиод</string>
+    <string name="settings">Настройки</string>
+    <string name="operating_mode">operation_mode</string>
+    <string name="operating_mode_spo">Сатурация кислорода в крови</string>
+    <string name="operating_mode_pulse">Пульсометр</string>
+    <string name="operating_mode_cardio">Кардиомонитор</string>
+    <string name="key_delay_timer">key_delay_timer</string>
+    <string name="key_points_count">key_points_count</string>
+    <string name="key_operating_mode">key_operating_mode</string>
+    <string name="key_last_connect_device">key_last_connect_device</string>
+</resources>

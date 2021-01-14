@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:defaultValue="1000"
+        android:inputType="number"
+        android:key="@string/key_delay_timer"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="Ввод целого числа"
+        android:title="Задержка для обновления графика" />
+    <EditTextPreference
+        android:defaultValue="40"
+        android:inputType="number"
+        android:key="@string/key_points_count"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="Не более 300 точек"
+        android:title="Количествово точек на экране" />
+    <ListPreference
+        android:key="@string/key_operating_mode"
+        android:title="Режимы работы"
+        android:summary="Устанавливает режим работы"
+        android:defaultValue="1"
+        android:entries="@array/mode"
+        android:entryValues="@array/mode_values"
+        android:dialogTitle="Выберите режим работы системы" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="@string/key_last_connect_device"
+        android:title="Подключаться автоматически"
+        android:summary="Включение подключения к последнему устройству" />
+</PreferenceScreen>
