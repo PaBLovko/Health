@@ -84,17 +84,17 @@ public class MainActivity extends AppCompatActivity implements
 
     private RelativeLayout frameLedControls;
     private Button         btnDisconnect;
-    private Switch switchBuzzer;
-    private Switch switchLed;
+    private Switch         switchBuzzer;
+    private Switch         switchLed;
     private EditText       etConsole;
 
     private Switch         switchEnableBt;
     private Button         btnEnableSearch;
     private ProgressBar    pbProgress;
-    private ListView       listBtDevices;
+    private ListView       listDevices;
 
     private BluetoothAdapter           bluetoothAdapter;
-    private ListAdapter listAdapter;
+    private ListAdapter                listAdapter;
     private ArrayList<BluetoothDevice> bluetoothDevices;
 
     private ConnectThread       connectThread;
@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements
     private ProgressDialog      progressDialog;
 
     private LineGraphSeries     seriesTemp;
+    private LineGraphSeries     seriesRand;
     private String              lastSensorValues = "";
     private int                 lastDelay;
     private Handler             handler;
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
         switchEnableBt      = findViewById(R.id.switch_enable_bt);
         btnEnableSearch     = findViewById(R.id.btn_enable_search);
         pbProgress          = findViewById(R.id.pb_progress);
-        listBtDevices       = findViewById(R.id.lv_bt_device);
+        listDevices = findViewById(R.id.lv_bt_device);
 
         frameLedControls    = findViewById(R.id.frameLedControls);
         btnDisconnect       = findViewById(R.id.btn_disconnect);
@@ -138,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements
         sharedPreferences   = getSharedPreferences("MAC_ADDRESS", MODE_PRIVATE);
 
         seriesTemp                  = new LineGraphSeries();
-        LineGraphSeries seriesRand  = new LineGraphSeries();
+        seriesRand                  = new LineGraphSeries();
         seriesTemp.setColor(Color.GREEN);
         seriesRand.setColor(Color.RED);
 
@@ -150,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements
 
         switchEnableBt.setOnCheckedChangeListener(this);
         btnEnableSearch.setOnClickListener(this);
-        listBtDevices.setOnItemClickListener(this);
+        listDevices.setOnItemClickListener(this);
 
         btnDisconnect.setOnClickListener(this);
         switchLed.setOnCheckedChangeListener(this);
@@ -254,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent.equals(listBtDevices)) {
+        if (parent.equals(listDevices)) {
             BluetoothDevice device = bluetoothDevices.get(position);
             if (device != null) {
                 btnEnableSearch.setText(R.string.start_search);
@@ -365,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
         listAdapter = new ListAdapter(this, bluetoothDevices, iconType);
-        listBtDevices.setAdapter(listAdapter);
+        listDevices.setAdapter(listAdapter);
     }
 
     private ArrayList<BluetoothDevice> getBoundedBtDevices() {
