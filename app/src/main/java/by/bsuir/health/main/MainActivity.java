@@ -13,7 +13,11 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.media.Image;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -41,17 +45,23 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import by.bsuir.health.ListAdapter;
 import by.bsuir.health.R;
+import by.bsuir.health.SdFile;
 import by.bsuir.health.preference.OnDelayChangedListener;
 import by.bsuir.health.preference.PrefActivity;
 import by.bsuir.health.preference.PrefModel;
@@ -67,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener{
 
     private static final String TAG               = MainActivity.class.getSimpleName();
-    public  static final int    REQUEST_CODE_LOC  = 1;
+    public  static final int REQUEST_CODE = 1;
 
     private static final int    REQ_ENABLE_BT     = 10;
     public  static final int    BT_BOUNDED        = 21;
@@ -76,8 +86,6 @@ public class MainActivity extends AppCompatActivity implements
     public  static final int    BUZZER            = 30;
     public  static final int    LED               = 31;
     private static final String KEY_MAC_ADDRESS   = "key_mac_address";
-
-    // private static final long   DELAY_TIMER       = 1000;
 
     private FrameLayout    frameMessage;
     private LinearLayout   frameControls;
@@ -111,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements
     private int                 xTempLastValue = 0;
     private int                 xRandLastValue = 0;
 
-    private PrefModel preference;
+    private PrefModel           preference;
     private SharedPreferences   sharedPreferences;
 
     @Override
@@ -184,6 +192,26 @@ public class MainActivity extends AppCompatActivity implements
             setListAdapter(BT_BOUNDED);
         }
 
+        accessExternalPermission();
+
+        ArrayList<SdFile> sdFiles = new ArrayList<>();
+        final String DIR_SD = "MyFiles";
+
+        ArrayList<String> FilesInFolder = GetFiles(
+                Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD);
+        //Toast.makeText(MainActivity.this, "Millis: " + FilesInFolder, Toast.LENGTH_SHORT).show();
+
+//        lv = (ListView)findViewById(R.id.filelist);
+//
+//        lv.setAdapter(new ArrayAdapter<String>(this,
+//                android.R.layout.simple_list_item_1, FilesInFolder));
+//
+//        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+//                // Clicking on items
+//            }
+//        });
+
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
             public void OnDelayChanged() {
@@ -193,6 +221,8 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -324,8 +354,6 @@ public class MainActivity extends AppCompatActivity implements
         quitDialog.show();
     }
 
-
-
     private void showFrameMessage() {
         frameMessage.setVisibility(View.VISIBLE);
         frameLedControls.setVisibility(View.GONE);
@@ -376,6 +404,21 @@ public class MainActivity extends AppCompatActivity implements
             tmpArrayList.addAll(deviceSet);
         }
         return tmpArrayList;
+    }
+
+    public ArrayList<String> GetFiles(String DirectoryPath) {
+        ArrayList<String> MyFiles = new ArrayList<String>();
+        File f = new File(DirectoryPath);
+
+        f.mkdirs();
+        File[] files = f.listFiles();
+        if (files.length == 0)
+            return null;
+        else {
+            for (int i=0; i<files.length; i++)
+                MyFiles.add(files[i].getName());
+        }
+        return MyFiles;
     }
 
     private void enableSearch() {
@@ -454,10 +497,26 @@ public class MainActivity extends AppCompatActivity implements
 //        }
 //    }
 
+        private void accessExternalPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int readExternalStorage = this.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+            int writeExternalStorage = this.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            List<String> listRequestPermission = new ArrayList<>();
+            if (readExternalStorage != PackageManager.PERMISSION_GRANTED)
+                listRequestPermission.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (writeExternalStorage != PackageManager.PERMISSION_GRANTED)
+                listRequestPermission.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (!listRequestPermission.isEmpty()) {
+                String[] strRequestPermission = listRequestPermission.toArray(new String[0]);
+                this.requestPermissions(strRequestPermission, REQUEST_CODE);
+            }
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_LOC) {
+        if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0) {
                 for (int gr : grantResults) {
                     // Check if request is granted or not
