@@ -20,11 +20,11 @@ public class ListImages extends BaseAdapter {
 
     private static final int RESOURCE_LAYOUT = R.layout.list_item;
 
-    private final ArrayList<Image> images;
+    private final ArrayList<SdFile> images;
     private final LayoutInflater inflater;
     private final int iconType;
 
-    public ListImages(Context context, ArrayList<Image> images, int iconType) {
+    public ListImages(Context context, ArrayList<SdFile> images, int iconType) {
         this.images = images;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.iconType = iconType;
@@ -49,10 +49,10 @@ public class ListImages extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = inflater.inflate(RESOURCE_LAYOUT, parent, false);
 
-        Image device = images.get(position);
-        if (device != null) {
-            ((TextView) view.findViewById(R.id.tv_name)).setText(device.toString());
-            ((TextView) view.findViewById(R.id.tv_address)).setText(device.toString());
+        SdFile image = images.get(position);
+        if (image != null) {
+            ((TextView) view.findViewById(R.id.tv_name)).setText(image.toString());
+            ((TextView) view.findViewById(R.id.tv_address)).setText(image.toString());
             ((ImageView) view.findViewById(R.id.iv_icon)).setImageResource(iconType);
         }
         return view;

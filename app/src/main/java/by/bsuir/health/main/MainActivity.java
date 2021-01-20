@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import by.bsuir.health.ImageFileFilter;
 import by.bsuir.health.ListAdapter;
 import by.bsuir.health.R;
 import by.bsuir.health.SdFile;
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener{
 
     private static final String TAG               = MainActivity.class.getSimpleName();
-    public  static final int REQUEST_CODE = 1;
+    public  static final int    REQUEST_CODE = 1;
 
     private static final int    REQ_ENABLE_BT     = 10;
     public  static final int    BT_BOUNDED        = 21;
@@ -138,10 +139,10 @@ public class MainActivity extends AppCompatActivity implements
         frameLedControls    = findViewById(R.id.frameLedControls);
         btnDisconnect       = findViewById(R.id.btn_disconnect);
         switchBuzzer        = findViewById(R.id.switch_buzzer);
-        switchLed            = findViewById(R.id.switch_led);
-        etConsole            = findViewById(R.id.et_console);
+        switchLed           = findViewById(R.id.switch_led);
+        etConsole           = findViewById(R.id.et_console);
 
-        GraphView gvGraph = findViewById(R.id.gv_graph);
+        GraphView gvGraph   = findViewById(R.id.gv_graph);
 
         preference          = new PrefModel(this);
         sharedPreferences   = getSharedPreferences("MAC_ADDRESS", MODE_PRIVATE);
@@ -197,6 +198,11 @@ public class MainActivity extends AppCompatActivity implements
         ArrayList<SdFile> sdFiles = new ArrayList<>();
         final String DIR_SD = "MyFiles";
 
+        File sdcard = Environment.getExternalStorageDirectory();
+        File dir = new File(Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD);
+
+        File[] bmpList = dir.listFiles(new ImageFileFilter());
+
         ArrayList<String> FilesInFolder = GetFiles(
                 Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD);
         //Toast.makeText(MainActivity.this, "Millis: " + FilesInFolder, Toast.LENGTH_SHORT).show();
@@ -223,6 +229,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    public ArrayList<String> GetFiles(String DirectoryPath) {
+        ArrayList<String> MyFiles = new ArrayList<String>();
+        File f = new File(DirectoryPath);
+        f.mkdirs();
+        File[] files = f.listFiles(new ImageFileFilter());
+        if (files.length == 0)
+            return null;
+        else {
+            for (File file : files) MyFiles.add(file.getName());
+        }
+        return MyFiles;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -404,21 +422,6 @@ public class MainActivity extends AppCompatActivity implements
             tmpArrayList.addAll(deviceSet);
         }
         return tmpArrayList;
-    }
-
-    public ArrayList<String> GetFiles(String DirectoryPath) {
-        ArrayList<String> MyFiles = new ArrayList<String>();
-        File f = new File(DirectoryPath);
-
-        f.mkdirs();
-        File[] files = f.listFiles();
-        if (files.length == 0)
-            return null;
-        else {
-            for (int i=0; i<files.length; i++)
-                MyFiles.add(files[i].getName());
-        }
-        return MyFiles;
     }
 
     private void enableSearch() {
