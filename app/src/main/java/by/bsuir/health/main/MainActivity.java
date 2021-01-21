@@ -199,21 +199,6 @@ public class MainActivity extends AppCompatActivity implements
 
         accessExternalPermission();
 
-        String dir = Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
-        ArrayList<File> FilesInFolder = GetFiles(dir);
-        //Toast.makeText(MainActivity.this, "Millis: " + FilesInFolder, Toast.LENGTH_SHORT).show();
-        ArrayList<SdFile> sdFiles = updateSdList(FilesInFolder);
-//        lv = (ListView)findViewById(R.id.filelist);
-//
-//        lv.setAdapter(new ArrayAdapter<String>(this,
-//                android.R.layout.simple_list_item_1, FilesInFolder));
-//
-//        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-//                // Clicking on items
-//            }
-//        });
-
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
             public void OnDelayChanged() {
@@ -471,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         } else {
-            //accessLocationPermission();
+            accessLocationPermission();
             bluetoothAdapter.startDiscovery();
         }
     }
@@ -522,26 +507,21 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * Запрос на разрешение данных о местоположении (для Marshmallow 6.0 и выше)
      */
-//    private void accessLocationPermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            int accessCoarseLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION);
-//            int accessFineLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION);
-//
-//            List<String> listRequestPermission = new ArrayList<String>();
-//
-//            if (accessCoarseLocation != PackageManager.PERMISSION_GRANTED) {
-//                listRequestPermission.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
-//            }
-//            if (accessFineLocation != PackageManager.PERMISSION_GRANTED) {
-//                listRequestPermission.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
-//            }
-//
-//            if (!listRequestPermission.isEmpty()) {
-//                String[] strRequestPermission = listRequestPermission.toArray(new String[listRequestPermission.size()]);
-//                this.requestPermissions(strRequestPermission, REQUEST_CODE_LOC);
-//            }
-//        }
-//    }
+    private void accessLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int accessCoarseLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION);
+            int accessFineLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION);
+            List<String> listRequestPermission = new ArrayList<>();
+            if (accessCoarseLocation != PackageManager.PERMISSION_GRANTED)
+                listRequestPermission.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (accessFineLocation != PackageManager.PERMISSION_GRANTED)
+                listRequestPermission.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
+            if (!listRequestPermission.isEmpty()) {
+                String[] strRequestPermission = listRequestPermission.toArray(new String[0]);
+                this.requestPermissions(strRequestPermission, REQUEST_CODE);
+            }
+        }
+    }
 
         private void accessExternalPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
