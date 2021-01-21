@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.Image;
 import android.os.Build;
@@ -54,6 +55,7 @@ import java.io.OutputStream;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ import java.util.Set;
 
 import by.bsuir.health.ImageFileFilter;
 import by.bsuir.health.ListAdapter;
+import by.bsuir.health.ListFile;
 import by.bsuir.health.R;
 import by.bsuir.health.SdFile;
 import by.bsuir.health.preference.OnDelayChangedListener;
@@ -104,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private BluetoothAdapter           bluetoothAdapter;
     private ListAdapter                listAdapter;
+    private ListFile                   listFile;
     private ArrayList<BluetoothDevice> bluetoothDevices;
 
     private ConnectThread       connectThread;
@@ -195,18 +199,10 @@ public class MainActivity extends AppCompatActivity implements
 
         accessExternalPermission();
 
-        ArrayList<SdFile> sdFiles = new ArrayList<>();
-        final String DIR_SD = "MyFiles";
-
-        File sdcard = Environment.getExternalStorageDirectory();
-        File dir = new File(Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD);
-
-        File[] bmpList = dir.listFiles(new ImageFileFilter());
-
-        ArrayList<String> FilesInFolder = GetFiles(
-                Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD);
+        String dir = Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
+        ArrayList<File> FilesInFolder = GetFiles(dir);
         //Toast.makeText(MainActivity.this, "Millis: " + FilesInFolder, Toast.LENGTH_SHORT).show();
-
+        ArrayList<SdFile> sdFiles = updateSdList(FilesInFolder);
 //        lv = (ListView)findViewById(R.id.filelist);
 //
 //        lv.setAdapter(new ArrayAdapter<String>(this,
@@ -228,19 +224,64 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+    boolean cardAvailable(){        // проверяем доступность SD
+        //Log.d(TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED);
+    }
 
-    public ArrayList<String> GetFiles(String DirectoryPath) {
-        ArrayList<String> MyFiles = new ArrayList<String>();
+    public static final String LOG_TAG = "myLogs";
+    public static final String FILENAME = "file";
+    public static final String DIR_SD = "MyFiles";
+    public static final String FILENAME_SD = "fileSD";
+
+    void writeFileSD() {
+        // получаем путь к SD
+        File sdPath = Environment.getExternalStorageDirectory();
+        // добавляем свой каталог к пути
+        sdPath = new File(sdPath.getAbsolutePath() + "/" + DIR_SD);
+        // создаем каталог
+        sdPath.mkdirs();
+        // формируем объект File, который содержит путь к файлу
+        File sdFile = new File(sdPath, FILENAME_SD);
+        try {
+            // открываем поток для записи
+            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
+            // пишем данные
+            bw.write("Содержимое файла на SD");
+            // закрываем поток
+            bw.close();
+//            Log.d(TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<SdFile> updateSdList(ArrayList<File> files){
+        ArrayList<SdFile> sdFiles = new ArrayList<>();
+        for (File file : files) sdFiles.add(new SdFile(BitmapFactory.decodeFile(file.getAbsolutePath()), file.getName(), file.lastModified()));
+        return sdFiles;
+    }
+
+    public ArrayList<File> GetFiles(String DirectoryPath){
         File f = new File(DirectoryPath);
         f.mkdirs();
         File[] files = f.listFiles(new ImageFileFilter());
         if (files.length == 0)
             return null;
-        else {
-            for (File file : files) MyFiles.add(file.getName());
-        }
-        return MyFiles;
+        else return new ArrayList<>(Arrays.asList(files));
     }
+
+//    public ArrayList<String> GetFiles(String DirectoryPath) {
+//        ArrayList<String> MyFiles = new ArrayList<String>();
+//        File f = new File(DirectoryPath);
+//        f.mkdirs();
+//        File[] files = f.listFiles(new ImageFileFilter());
+//        if (files.length == 0)
+//            return null;
+//        else for (File file : files) MyFiles.add(file.getName());
+//        return MyFiles;
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -411,6 +452,8 @@ public class MainActivity extends AppCompatActivity implements
                 iconType = R.drawable.ic_bluetooth_search_device;
                 break;
         }
+        //String dir = Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
+        //listFile = new ListFile(this, updateSdList(GetFiles(dir)));
         listAdapter = new ListAdapter(this, bluetoothDevices, iconType);
         listDevices.setAdapter(listAdapter);
     }
