@@ -1,5 +1,6 @@
 package by.bsuir.health.main;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -11,14 +12,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.Image;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -52,18 +49,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import by.bsuir.health.CheckPermissionUtil;
 import by.bsuir.health.ImageFileFilter;
 import by.bsuir.health.ListAdapter;
 import by.bsuir.health.ListFile;
+import by.bsuir.health.Permission;
 import by.bsuir.health.R;
 import by.bsuir.health.SdFile;
 import by.bsuir.health.preference.OnDelayChangedListener;
@@ -126,6 +123,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private PrefModel           preference;
     private SharedPreferences   sharedPreferences;
+
+    private Permission          permission;
+
+    private CheckPermissionUtil mCheckPermissionUtil;
+    private String [] permissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,7 +199,17 @@ public class MainActivity extends AppCompatActivity implements
             setListAdapter(BT_BOUNDED);
         }
 
-        accessExternalPermission();
+
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            permission = new Permission(
+//                    this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION),
+//                    this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION),
+//                    this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE),
+//                    this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE));
+//        }
+//
+//        permission.access(this, permission.ExternalPermission());
 
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
@@ -209,7 +221,33 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         cardAvailable();
+
+        permissions = new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+
+        mCheckPermissionUtil = CheckPermissionUtil.getInstance();
+        mCheckPermissionUtil.checkPermissions(this, permissions, permissionsResult);
     }
+
+    CheckPermissionUtil.IPermissionsResult permissionsResult=new CheckPermissionUtil.IPermissionsResult() {
+        @Override
+        public void passPermissions() {
+            Toast.makeText(MainActivity.this, "good", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void forbidPermissions() {
+            //System.out.println("finish");
+        }
+        @Override
+        public void repeatPermissions() {
+            mCheckPermissionUtil.checkPermissions(MainActivity.this, permissions, permissionsResult);
+        }
+    };
+
 
     boolean cardAvailable(){        // проверяем доступность SD
         //Log.d(TAG, "SD-карта не доступна: " + Environment.getExternalStorageState());
@@ -458,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         } else {
-            accessLocationPermission();
+            //permission.access(this, permission.LocationPermission());
             bluetoothAdapter.startDiscovery();
         }
     }
@@ -505,53 +543,13 @@ public class MainActivity extends AppCompatActivity implements
         connectThread.start();
         startTimer();
     }
-    
-    private void accessLocationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int accessCoarseLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION);
-            int accessFineLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION);
-            List<String> listRequestPermission = new ArrayList<>();
-            if (accessCoarseLocation != PackageManager.PERMISSION_GRANTED)
-                listRequestPermission.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
-            if (accessFineLocation != PackageManager.PERMISSION_GRANTED)
-                listRequestPermission.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
-            if (!listRequestPermission.isEmpty()) {
-                String[] strRequestPermission = listRequestPermission.toArray(new String[0]);
-                this.requestPermissions(strRequestPermission, REQUEST_CODE);
-            }
-        }
-    }
-
-        private void accessExternalPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int readExternalStorage = this.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE);
-            int writeExternalStorage = this.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            List<String> listRequestPermission = new ArrayList<>();
-            if (readExternalStorage != PackageManager.PERMISSION_GRANTED)
-                listRequestPermission.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
-            if (writeExternalStorage != PackageManager.PERMISSION_GRANTED)
-                listRequestPermission.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (!listRequestPermission.isEmpty()) {
-                String[] strRequestPermission = listRequestPermission.toArray(new String[0]);
-                this.requestPermissions(strRequestPermission, REQUEST_CODE);
-            }
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE) {
-            if (grantResults.length > 0) {
-                for (int gr : grantResults) {
-                    // Check if request is granted or not
-                    if (gr != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-                }
-                //TODO - Add your code here to start Discovery
-            }
-        }
+        mCheckPermissionUtil.onRequestPermissionsResult(requestCode, grantResults);
+
+//        permission.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
     private class ConnectThread extends Thread {
