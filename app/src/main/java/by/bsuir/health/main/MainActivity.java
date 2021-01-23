@@ -207,6 +207,8 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        cardAvailable();
     }
 
     boolean cardAvailable(){        // проверяем доступность SD
@@ -503,10 +505,7 @@ public class MainActivity extends AppCompatActivity implements
         connectThread.start();
         startTimer();
     }
-
-    /**
-     * Запрос на разрешение данных о местоположении (для Marshmallow 6.0 и выше)
-     */
+    
     private void accessLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int accessCoarseLocation = this.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -705,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements
             String command = "";
             switch (led) {
                 case BUZZER:
-                    command = (state) ? "buzzer on##" : "buzzer off#";
+                    command = (state) ? "buzzer on#" : "buzzer off#";
                     break;
                 case LED:
                     command = (state) ? "led on#" : "led off#";
