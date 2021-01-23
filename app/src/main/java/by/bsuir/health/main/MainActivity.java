@@ -60,7 +60,6 @@ import by.bsuir.health.CheckPermissionUtil;
 import by.bsuir.health.ImageFileFilter;
 import by.bsuir.health.ListAdapter;
 import by.bsuir.health.ListFile;
-import by.bsuir.health.Permission;
 import by.bsuir.health.R;
 import by.bsuir.health.SdFile;
 import by.bsuir.health.preference.OnDelayChangedListener;
@@ -124,10 +123,8 @@ public class MainActivity extends AppCompatActivity implements
     private PrefModel           preference;
     private SharedPreferences   sharedPreferences;
 
-    private Permission          permission;
-
-    private CheckPermissionUtil mCheckPermissionUtil;
-    private String [] permissions;
+    private CheckPermissionUtil checkPermissionUtil;
+    private String []           permissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,18 +196,6 @@ public class MainActivity extends AppCompatActivity implements
             setListAdapter(BT_BOUNDED);
         }
 
-
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            permission = new Permission(
-//                    this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION),
-//                    this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION),
-//                    this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE),
-//                    this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE));
-//        }
-//
-//        permission.access(this, permission.ExternalPermission());
-
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
             public void OnDelayChanged() {
@@ -229,8 +214,8 @@ public class MainActivity extends AppCompatActivity implements
                 Manifest.permission.ACCESS_COARSE_LOCATION
         };
 
-        mCheckPermissionUtil = CheckPermissionUtil.getInstance();
-        mCheckPermissionUtil.checkPermissions(this, permissions, permissionsResult);
+        checkPermissionUtil = CheckPermissionUtil.getInstance();
+        checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
     }
 
     CheckPermissionUtil.IPermissionsResult permissionsResult=new CheckPermissionUtil.IPermissionsResult() {
@@ -244,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         @Override
         public void repeatPermissions() {
-            mCheckPermissionUtil.checkPermissions(MainActivity.this, permissions, permissionsResult);
+            checkPermissionUtil.checkPermissions(MainActivity.this, permissions, permissionsResult);
         }
     };
 
@@ -547,9 +532,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        mCheckPermissionUtil.onRequestPermissionsResult(requestCode, grantResults);
-
-//        permission.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+        checkPermissionUtil.onRequestPermissionsResult(requestCode, grantResults);
     }
 
     private class ConnectThread extends Thread {
