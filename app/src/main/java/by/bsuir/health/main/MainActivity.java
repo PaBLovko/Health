@@ -3,6 +3,7 @@ package by.bsuir.health.main;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.WallpaperManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -12,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Environment;
@@ -22,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +34,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -90,8 +94,15 @@ public class MainActivity extends AppCompatActivity implements
     private FrameLayout    frameMessage;
     private LinearLayout   frameControls;
 
+    private LinearLayout        frameStorage;
+    private String              storageDirectory;
+    private ListView            listImages;
+    private ArrayList<SdFile>   sdFiles;
+
     private RelativeLayout frameLedControls;
     private Button         btnDisconnect;
+    private Button         btnStart;
+    private Button         btnStorage;
     private Switch         switchBuzzer;
     private Switch         switchLed;
     private EditText       etConsole;
@@ -126,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements
     private CheckPermissionUtil checkPermissionUtil;
     private String []           permissions;
 
+//    private ImageView           imageview;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,14 +146,18 @@ public class MainActivity extends AppCompatActivity implements
 
         frameMessage        = findViewById(R.id.frame_message);
         frameControls       = findViewById(R.id.frame_control);
+        frameStorage        = findViewById(R.id.frame_storage);
+        listImages          = findViewById(R.id.lv_image);
 
         switchEnableBt      = findViewById(R.id.switch_enable_bt);
         btnEnableSearch     = findViewById(R.id.btn_enable_search);
         pbProgress          = findViewById(R.id.pb_progress);
-        listDevices         = findViewById(R.id.lv_bt_device);
+        listDevices         = findViewById(R.id.lv_device);
 
         frameLedControls    = findViewById(R.id.frameLedControls);
         btnDisconnect       = findViewById(R.id.btn_disconnect);
+        btnStart            = findViewById(R.id.btn_start);
+        btnStorage          = findViewById(R.id.btn_storage);
         switchBuzzer        = findViewById(R.id.switch_buzzer);
         switchLed           = findViewById(R.id.switch_led);
         etConsole           = findViewById(R.id.et_console);
@@ -165,11 +182,16 @@ public class MainActivity extends AppCompatActivity implements
         btnEnableSearch.setOnClickListener(this);
         listDevices.setOnItemClickListener(this);
 
+        btnStorage.setOnClickListener(this);
+        listImages.setOnItemClickListener(this);
+
+        btnStart.setOnClickListener(this);
         btnDisconnect.setOnClickListener(this);
         switchLed.setOnCheckedChangeListener(this);
         switchBuzzer.setOnCheckedChangeListener(this);
 
         bluetoothDevices = new ArrayList<>();
+        sdFiles = new ArrayList<>();
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -205,8 +227,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        cardAvailable();
-
         permissions = new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -216,12 +236,19 @@ public class MainActivity extends AppCompatActivity implements
 
         checkPermissionUtil = CheckPermissionUtil.getInstance();
         checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
+
+        if(cardAvailable()) storageDirectory =
+                Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
+
+//        imageview = (ImageView) findViewById();
+
     }
 
-    CheckPermissionUtil.IPermissionsResult permissionsResult=new CheckPermissionUtil.IPermissionsResult() {
+    CheckPermissionUtil.IPermissionsResult permissionsResult =
+            new CheckPermissionUtil.IPermissionsResult() {
         @Override
         public void passPermissions() {
-            Toast.makeText(MainActivity.this, "good", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Welcom", Toast.LENGTH_SHORT).show();
         }
         @Override
         public void forbidPermissions() {
@@ -246,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements
     public static final String FILENAME_SD = "fileSD";
 
     void writeFileSD() {
+        cardAvailable();
         // получаем путь к SD
         File sdPath = Environment.getExternalStorageDirectory();
         // добавляем свой каталог к пути
@@ -273,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements
         return sdFiles;
     }
 
-    public ArrayList<File> GetFiles(String DirectoryPath){
+    public ArrayList<File> getFiles(String DirectoryPath){
         File f = new File(DirectoryPath);
         f.mkdirs();
         File[] files = f.listFiles(new ImageFileFilter());
@@ -281,17 +309,6 @@ public class MainActivity extends AppCompatActivity implements
             return null;
         else return new ArrayList<>(Arrays.asList(files));
     }
-
-//    public ArrayList<String> GetFiles(String DirectoryPath) {
-//        ArrayList<String> MyFiles = new ArrayList<String>();
-//        File f = new File(DirectoryPath);
-//        f.mkdirs();
-//        File[] files = f.listFiles(new ImageFileFilter());
-//        if (files.length == 0)
-//            return null;
-//        else for (File file : files) MyFiles.add(file.getName());
-//        return MyFiles;
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -311,7 +328,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        lastDelay = preference.getDelayTimer();
         cancelTimer();
     }
 
@@ -326,14 +342,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cancelTimer();
         unregisterReceiver(receiver);
-        if (connectThread != null) {
-            connectThread.cancel();
-        }
-        if (connectedThread != null) {
-            connectedThread.cancel();
-        }
+        disconnection();
     }
 
     @Override
@@ -341,16 +351,29 @@ public class MainActivity extends AppCompatActivity implements
         if (v.equals(btnEnableSearch)) {
             enableSearch();
         } else if (v.equals(btnDisconnect)) {
-            cancelTimer();
-            if (connectedThread != null) {
-                connectedThread.cancel();
-            }
-            if (connectThread != null) {
-                connectThread.cancel();
-            }
+            disconnection();
             showFrameControls();
+        } else if (v.equals(btnStart)){
+//
+        } else if (v.equals(btnStorage)){
+            disconnection();
+            setListFile();
+            showFrameStorage();
         }
     }
+
+    private void setListFile() {
+        sdFiles = updateSdList(getFiles(storageDirectory));
+        listFile = new ListFile(this, sdFiles);
+        listImages.setAdapter(listFile);
+    }
+
+    private void disconnection(){
+        cancelTimer();
+        if (connectedThread != null) connectedThread.cancel();
+        if (connectThread != null) connectThread.cancel();
+    }
+
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -364,22 +387,43 @@ public class MainActivity extends AppCompatActivity implements
                 startTimer();
             }
         }
+        if (parent.equals(listImages)){
+            SdFile sdFile = sdFiles.get(position);
+            if (sdFile != null){
+                showImage(sdFile.getImage());
+            }
+        }
+    }
+
+    private void showImage(Bitmap bitmap){
+//        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+//        DisplayMetrics displayMetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//
+//        int w = displayMetrics.widthPixels;
+//        int h = displayMetrics.heightPixels;
+//
+//        try{
+//            if (bitmap != null){
+//                //toast
+//                wallpaperManager.setBitmap(bitmap);
+//                wallpaperManager.suggestDesiredDimensions(w, h);
+//            }else { Log.i("clipcodes", "Bitmap Null");}
+//        }catch (Exception e){
+//            Log.i("clipcodes", "Can't ser wallpaper");
+//        }
+
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.equals(switchEnableBt)) {
             enableBt(isChecked);
-            if (!isChecked) {
-                showFrameMessage();
-            }
-        } else if (buttonView.equals(switchBuzzer)) {
-            // TODO включение или отключение динамика
-            enableCheckBox(BUZZER, isChecked);
-        } else if (buttonView.equals(switchLed)) {
-            // TODO включение или отключение светодиода
-            enableCheckBox(LED, isChecked);
-        }
+            if (!isChecked) showFrameMessage();
+        } else if (buttonView.equals(switchBuzzer))
+            enableCheckBox(BUZZER, isChecked); // TODO включение или отключение динамика
+        else if (buttonView.equals(switchLed))
+            enableCheckBox(LED, isChecked);// TODO включение или отключение светодиода
     }
 
     @Override
@@ -427,18 +471,28 @@ public class MainActivity extends AppCompatActivity implements
         frameMessage.setVisibility(View.VISIBLE);
         frameLedControls.setVisibility(View.GONE);
         frameControls.setVisibility(View.GONE);
+        frameStorage.setVisibility(View.GONE);
     }
 
     private void showFrameControls() {
         frameMessage.setVisibility(View.GONE);
         frameLedControls.setVisibility(View.GONE);
         frameControls.setVisibility(View.VISIBLE);
+        frameStorage.setVisibility(View.GONE);
     }
 
     private void showFrameLedControls() {
         frameLedControls.setVisibility(View.VISIBLE);
         frameMessage.setVisibility(View.GONE);
         frameControls.setVisibility(View.GONE);
+        frameStorage.setVisibility(View.GONE);
+    }
+
+    private void showFrameStorage(){
+        frameLedControls.setVisibility(View.GONE);
+        frameMessage.setVisibility(View.GONE);
+        frameControls.setVisibility(View.GONE);
+        frameStorage.setVisibility(View.VISIBLE);
     }
 
     private void enableBt(boolean flag) {
@@ -462,8 +516,6 @@ public class MainActivity extends AppCompatActivity implements
                 iconType = R.drawable.ic_bluetooth_search_device;
                 break;
         }
-        //String dir = Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
-        //listFile = new ListFile(this, updateSdList(GetFiles(dir)));
         listAdapter = new ListAdapter(this, bluetoothDevices, iconType);
         listDevices.setAdapter(listAdapter);
     }

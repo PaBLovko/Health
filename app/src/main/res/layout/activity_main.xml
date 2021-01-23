@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -56,17 +57,47 @@
             android:visibility="gone" />
 
         <ListView
-            android:id="@+id/lv_bt_device"
+            android:id="@+id/lv_device"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="8dp"></ListView>
+            android:layout_marginTop="8dp" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/frame_storage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <ListView
+            android:id="@+id/lv_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+<!--    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+
+<!--        android:padding="4dp"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content">-->
+<!--        <ImageView-->
+<!--            android:id="@+id/iv_icon"-->
+<!--            android:src="@drawable/ic_bluetooth_bounded_device"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_centerInParent="true"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:contentDescription="@string/todo" />-->
+
+<!--    </RelativeLayout>-->
 
     <RelativeLayout
         android:id="@+id/frameLedControls"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btn_storage"
