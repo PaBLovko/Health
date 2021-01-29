@@ -4,8 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import by.bsuir.health.bluetooth.exception.BluetoothException;
 
 
 public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -78,7 +81,13 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
                 assert string != null;
                 setDelayTimer(Integer.parseInt(string));
                 for (OnDelayChangedListener l : listeners) {
-                    l.OnDelayChanged();
+                    try {
+                        l.OnDelayChanged();
+                    } catch (BluetoothException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case KEY_POINTS_COUNT:

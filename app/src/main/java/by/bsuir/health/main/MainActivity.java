@@ -3,7 +3,6 @@ package by.bsuir.health.main;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.app.WallpaperManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -24,7 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,7 +32,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -58,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import by.bsuir.health.CheckPermissionUtil;
 import by.bsuir.health.ImageFileFilter;
@@ -66,6 +62,9 @@ import by.bsuir.health.ListAdapter;
 import by.bsuir.health.ListFile;
 import by.bsuir.health.R;
 import by.bsuir.health.SdFile;
+import by.bsuir.health.bluetooth.BluetoothConnector;
+import by.bsuir.health.bluetooth.exception.BluetoothException;
+import by.bsuir.health.bluetooth.exception.ConnectionBluetoothException;
 import by.bsuir.health.preference.OnDelayChangedListener;
 import by.bsuir.health.preference.PrefActivity;
 import by.bsuir.health.preference.PrefModel;
@@ -81,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener{
 
     private static final String TAG               = MainActivity.class.getSimpleName();
-    public  static final int    REQUEST_CODE = 1;
 
     private static final int    REQ_ENABLE_BT     = 10;
     public  static final int    BT_BOUNDED        = 21;
@@ -112,20 +110,14 @@ public class MainActivity extends AppCompatActivity implements
     private ProgressBar    pbProgress;
     private ListView       listDevices;
 
-    private BluetoothAdapter           bluetoothAdapter;
-    private ListAdapter                listAdapter;
-    private ListFile                   listFile;
-    private ArrayList<BluetoothDevice> bluetoothDevices;
-
-    private ConnectThread       connectThread;
-    private ConnectedThread     connectedThread;
+    private ListAdapter    listAdapter;
+    private ListFile       listFile;
 
     private ProgressDialog      progressDialog;
 
     private LineGraphSeries     seriesTemp;
     private LineGraphSeries     seriesRand;
     private String              lastSensorValues = "";
-    private int                 lastDelay;
     private Handler             handler;
     private Runnable            timer;
     private int                 xTempLastValue = 0;
@@ -138,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements
     private String []           permissions;
 
 //    private ImageView           imageview;
+
+    private BluetoothConnector bluetoothConnector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements
         switchLed.setOnCheckedChangeListener(this);
         switchBuzzer.setOnCheckedChangeListener(this);
 
-        bluetoothDevices = new ArrayList<>();
         sdFiles = new ArrayList<>();
 
         progressDialog = new ProgressDialog(this);
@@ -204,25 +197,31 @@ public class MainActivity extends AppCompatActivity implements
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothConnector = new BluetoothConnector();
 
-        if (bluetoothAdapter == null) {
+        if (BluetoothConnector.getBluetoothAdapter() == null) {
             Toast.makeText(this, R.string.bluetooth_not_supported, Toast.LENGTH_SHORT).show();
             Log.d(TAG, "onCreate: " + getString(R.string.bluetooth_not_supported));
             finish();
         }
 
-        if (bluetoothAdapter.isEnabled()) {
-            showFrameControls();
-            switchEnableBt.setChecked(true);
-            setListAdapter(BT_BOUNDED);
+        try {
+            if (BluetoothConnector.isEnabled()) {
+                showFrameControls();
+                switchEnableBt.setChecked(true);
+                setListAdapter(BT_BOUNDED);
+            }
+        } catch (BluetoothException e) {
+            e.printStackTrace();
         }
 
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
-            public void OnDelayChanged() {
-                if (connectedThread != null && connectThread.isConnect()) {
-                    connectedThread.write(preference.getDelayTimer() + "Delay#");
+            public void OnDelayChanged() throws BluetoothException, IOException {
+//                if (connectedThread != null && connectThread.isConnect()) {
+//                    connectedThread.write(preference.getDelayTimer() + "Delay#");
+                if (bluetoothConnector.isConnected()) {
+                    bluetoothConnector.write((preference.getDelayTimer() + "Delay#").getBytes());
                 }
             }
         });
@@ -241,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements
                 Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
 
 //        imageview = (ImageView) findViewById();
-
     }
 
     CheckPermissionUtil.IPermissionsResult permissionsResult =
@@ -334,7 +332,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (connectedThread != null) {
+//        if (connectedThread != null) {
+        if (bluetoothConnector.isConnected()) {
             startTimer();
         }
     }
@@ -343,20 +342,42 @@ public class MainActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(receiver);
-        disconnection();
+        try {
+            disconnection();
+        } catch (BluetoothException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onClick(View v) {
         if (v.equals(btnEnableSearch)) {
-            enableSearch();
+//            enableSearch();
+            try {
+                bluetoothConnector.enableSearch();
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            }
+            try {
+                BluetoothConnector.enableSearch();
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            }
         } else if (v.equals(btnDisconnect)) {
-            disconnection();
+            try {
+                disconnection();
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            }
             showFrameControls();
         } else if (v.equals(btnStart)){
 //
         } else if (v.equals(btnStorage)){
-            disconnection();
+            try {
+                disconnection();
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            }
             setListFile();
             showFrameStorage();
         }
@@ -368,23 +389,26 @@ public class MainActivity extends AppCompatActivity implements
         listImages.setAdapter(listFile);
     }
 
-    private void disconnection(){
+    private void disconnection() throws BluetoothException {
         cancelTimer();
-        if (connectedThread != null) connectedThread.cancel();
-        if (connectThread != null) connectThread.cancel();
+//        if (connectedThread != null) connectedThread.cancel();
+//        if (connectThread != null) connectThread.cancel();
+        if (bluetoothConnector.isConnected()) bluetoothConnector.disconnect();
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (parent.equals(listDevices)) {
-            BluetoothDevice device = bluetoothDevices.get(position);
+            BluetoothDevice device = bluetoothConnector.getBluetoothDevices().get(position);
             if (device != null) {
                 btnEnableSearch.setText(R.string.start_search);
                 pbProgress.setVisibility(View.GONE);
-                connectThread = new ConnectThread(device);
-                connectThread.start();
-                startTimer();
+                try {
+                    connectToExisting(device);
+                } catch (BluetoothException e) {
+                    e.printStackTrace();
+                    viewWarning(e.getMessage());
+                }
             }
         }
         if (parent.equals(listImages)){
@@ -420,20 +444,38 @@ public class MainActivity extends AppCompatActivity implements
         if (buttonView.equals(switchEnableBt)) {
             enableBt(isChecked);
             if (!isChecked) showFrameMessage();
-        } else if (buttonView.equals(switchBuzzer))
-            enableCheckBox(BUZZER, isChecked); // TODO включение или отключение динамика
-        else if (buttonView.equals(switchLed))
-            enableCheckBox(LED, isChecked);// TODO включение или отключение светодиода
+        } else if (buttonView.equals(switchBuzzer)) {
+            try {
+                enableCheckBox(BUZZER, isChecked); // TODO включение или отключение динамика
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (buttonView.equals(switchLed)) {
+            try {
+                enableCheckBox(LED, isChecked);// TODO включение или отключение светодиода
+            } catch (BluetoothException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == REQ_ENABLE_BT) {
-            if (resultCode == RESULT_OK && bluetoothAdapter.isEnabled()) {
-                showFrameControls();
-                setListAdapter(BT_BOUNDED);
-            } else if (resultCode == RESULT_CANCELED) {
-                enableBt(true);
+            try {
+                if (resultCode == RESULT_OK && BluetoothConnector.isEnabled()) {
+                    showFrameControls();
+                    setListAdapter(BT_BOUNDED);
+                } else if (resultCode == RESULT_CANCELED) {
+                    enableBt(true);
+                }
+            } catch (BluetoothException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -500,42 +542,24 @@ public class MainActivity extends AppCompatActivity implements
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQ_ENABLE_BT);
         } else {
-            bluetoothAdapter.disable();
+            BluetoothConnector.getBluetoothAdapter().disable();
         }
     }
 
-    private void setListAdapter(int type) {
-        bluetoothDevices.clear();
+    private void setListAdapter(int type) throws BluetoothException {
+        bluetoothConnector.clear();
         int iconType = R.drawable.ic_bluetooth_bounded_device;
         switch (type) {
             case BT_BOUNDED:
-                bluetoothDevices = getBoundedDevices();
+                bluetoothConnector.setBluetoothDevices(BluetoothConnector.getBondedDevices());
                 iconType = R.drawable.ic_bluetooth_bounded_device;
                 break;
             case BT_SEARCH:
                 iconType = R.drawable.ic_bluetooth_search_device;
                 break;
         }
-        listAdapter = new ListAdapter(this, bluetoothDevices, iconType);
+        listAdapter = new ListAdapter(this, bluetoothConnector.getBluetoothDevices(), iconType);
         listDevices.setAdapter(listAdapter);
-    }
-
-    private ArrayList<BluetoothDevice> getBoundedDevices() {
-        Set<BluetoothDevice> deviceSet = bluetoothAdapter.getBondedDevices();
-        ArrayList<BluetoothDevice> tmpArrayList = new ArrayList<>();
-        if (deviceSet.size() > 0) {
-            tmpArrayList.addAll(deviceSet);
-        }
-        return tmpArrayList;
-    }
-
-    private void enableSearch() {
-        if (bluetoothAdapter.isDiscovering()) {
-            bluetoothAdapter.cancelDiscovery();
-        } else {
-            //permission.access(this, permission.LocationPermission());
-            bluetoothAdapter.startDiscovery();
-        }
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -547,7 +571,11 @@ public class MainActivity extends AppCompatActivity implements
                     case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
                         btnEnableSearch.setText(R.string.stop_search);
                         pbProgress.setVisibility(View.VISIBLE);
-                        setListAdapter(BT_SEARCH);
+                        try {
+                            setListAdapter(BT_SEARCH);
+                        } catch (BluetoothException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                         btnEnableSearch.setText(R.string.start_search);
@@ -556,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements
                     case BluetoothDevice.ACTION_FOUND:
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         if (device != null) {
-                            bluetoothDevices.add(device);
+                            bluetoothConnector.add(device);
                             listAdapter.notifyDataSetChanged();
                         }
                         if(preference.isLastConnectDevice()){
@@ -565,8 +593,13 @@ public class MainActivity extends AppCompatActivity implements
                                     KEY_MAC_ADDRESS, ""))){
                                 btnEnableSearch.setText(R.string.start_search);
                                 pbProgress.setVisibility(View.GONE);
-                                setListAdapter(BT_SEARCH);
-                                connectToExisting(device);
+                                try {
+                                    setListAdapter(BT_SEARCH);
+                                    connectToExisting(device);
+                                } catch (BluetoothException e) {
+                                    e.printStackTrace();
+                                    viewWarning(e.getMessage());
+                                }
                             }
                         }
                         break;
@@ -575,9 +608,60 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
-    private void connectToExisting(BluetoothDevice device){
-        connectThread = new ConnectThread(device);
-        connectThread.start();
+    private void viewWarning(final String message){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressDialog.dismiss();
+                Toast.makeText(MainActivity.this,
+                        message,Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isDevice(String device){
+        String nameDevice = "HC-05";
+        return device.equals(nameDevice);
+    }
+
+    private void readStream(){
+        StringBuilder buffer = new StringBuilder();
+        final StringBuilder sbConsole = new StringBuilder();
+        try {
+            while (bluetoothConnector.isConnected()) {
+                int bytes = bluetoothConnector.read();
+                buffer.append((char) bytes);
+                int eof = buffer.indexOf("\r\n");
+
+                if (eof > 0) {
+                    sbConsole.append(buffer.toString());
+                    lastSensorValues = buffer.toString();
+                    buffer.delete(0, buffer.length());
+                }
+            }
+            bluetoothConnector.disconnect();
+        } catch (IOException | BluetoothException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void connectToExisting(BluetoothDevice device) throws BluetoothException {
+        progressDialog.show();
+        if(isDevice(device.getName()))
+            bluetoothConnector.connect(device);
+        else throw new ConnectionBluetoothException("Not connected to this device");;
+        saveMacAddress(device.getAddress());
+        progressDialog.dismiss();
+//        bluetoothConnector = new BluetoothConnector();
+        bluetoothConnector.start();
+        showFrameLedControls();
+//            runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                showFrameLedControls();
+////                readStream();
+//            }
+//        });
         startTimer();
     }
 
@@ -587,153 +671,154 @@ public class MainActivity extends AppCompatActivity implements
         checkPermissionUtil.onRequestPermissionsResult(requestCode, grantResults);
     }
 
-    private class ConnectThread extends Thread {
-        private BluetoothSocket bluetoothSocket = null;
-        private boolean success = false;
-        private String nameThisDevice;
-        private String macAddressNow;
-        private String nameDevice;
-
-        public ConnectThread(BluetoothDevice device) {
-            try {
-                Method method = device.getClass().getMethod("createRfcommSocket", int.class);
-                bluetoothSocket = (BluetoothSocket) method.invoke(device, 1);
-                progressDialog.show();
-                nameDevice = "HC-05";
-                nameThisDevice = device.getName();
-                macAddressNow = device.getAddress();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void saveMacAddress(){
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(KEY_MAC_ADDRESS, macAddressNow);
-            editor.apply();
-        }
-
-        @Override
-        public void run() {
-            try {
-                bluetoothSocket.connect();
-                success = nameThisDevice.equals(nameDevice);
-                progressDialog.dismiss();
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressDialog.dismiss();
-                        Toast.makeText(MainActivity.this,
-                                "Не могу соединиться!",Toast.LENGTH_SHORT).show();
-                    }
-                });
-                cancel();
-            }
-            if (success) {
-                saveMacAddress();
-                connectedThread = new ConnectedThread(bluetoothSocket);
-                connectedThread.start();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showFrameLedControls();
-                    }
-                });
-            }
-        }
-
-        public boolean isConnect() {
-            return bluetoothSocket.isConnected();
-        }
-
-        public void cancel() {
-            try {
-                Log.d(TAG, "cancel: " + this.getClass().getSimpleName());
-                bluetoothSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public void saveMacAddress(String macAddressNow){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_MAC_ADDRESS, macAddressNow);
+        editor.apply();
     }
 
-    private class ConnectedThread  extends  Thread {
-        private final InputStream inputStream;
-        private final OutputStream outputStream;
-        private boolean isConnected;
+//    private class ConnectThread extends Thread {
+//        private BluetoothSocket bluetoothSocket = null;
+//        private boolean success = false;
+//        private String nameThisDevice;
+//        private String macAddressNow;
+//        private String nameDevice;
+//
+//        public ConnectThread(BluetoothDevice device) {
+//            try {
+//                Method method = device.getClass().getMethod("createRfcommSocket", int.class);
+//                bluetoothSocket = (BluetoothSocket) method.invoke(device, 1);
+//                progressDialog.show();
+//                nameDevice = "HC-05";
+//                nameThisDevice = device.getName();
+//                macAddressNow = device.getAddress();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                bluetoothSocket.connect();
+//                success = nameThisDevice.equals(nameDevice);
+//                progressDialog.dismiss();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        progressDialog.dismiss();
+//                        Toast.makeText(MainActivity.this,
+//                                "Не могу соединиться!",Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//                cancel();
+//            }
+//            if (success) {
+//                saveMacAddress(macAddressNow);
+//                connectedThread = new ConnectedThread(bluetoothSocket);
+//                connectedThread.start();
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        showFrameLedControls();
+//                    }
+//                });
+//            }
+//        }
+//
+//        public boolean isConnect() {
+//            return bluetoothSocket.isConnected();
+//        }
+//
+//        public void cancel() {
+//            try {
+//                Log.d(TAG, "cancel: " + this.getClass().getSimpleName());
+//                bluetoothSocket.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
-        public ConnectedThread(BluetoothSocket bluetoothSocket) {
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
+//    private class ConnectedThread  extends  Thread {
+//        private final InputStream inputStream;
+//        private final OutputStream outputStream;
+//        private boolean isConnected;
+//
+//        public ConnectedThread(BluetoothSocket bluetoothSocket) {
+//            InputStream inputStream = null;
+//            OutputStream outputStream = null;
+//
+//            try {
+//                inputStream = bluetoothSocket.getInputStream();
+//                outputStream = bluetoothSocket.getOutputStream();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            this.inputStream = inputStream;
+//            this.outputStream = outputStream;
+//            isConnected = true;
+//        }
+//
+//        @Override
+//        public void run() {
+//            BufferedInputStream bis = new BufferedInputStream(inputStream);
+//            StringBuilder buffer = new StringBuilder();
+//            final StringBuilder sbConsole = new StringBuilder();
+//
+//            while (isConnected) {
+//                try {
+//                    int bytes = bis.read();
+//                    buffer.append((char) bytes);
+//                    int eof = buffer.indexOf("\r\n");
+//
+//                    if (eof > 0) {
+//                        sbConsole.append(buffer.toString());
+//                        lastSensorValues = buffer.toString();
+//                        buffer.delete(0, buffer.length());
+//                    }
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            try {
+//                bis.close();
+//                cancel();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        public void write(String command) {
+//            byte[] bytes = command.getBytes();
+//            if (outputStream != null) {
+//                try {
+//                    outputStream.write(bytes);
+//                    outputStream.flush();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//
+//        public void cancel() {
+//            try {
+//                isConnected = false;
+//                inputStream.close();
+//                outputStream.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
-            try {
-                inputStream = bluetoothSocket.getInputStream();
-                outputStream = bluetoothSocket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            this.inputStream = inputStream;
-            this.outputStream = outputStream;
-            isConnected = true;
-        }
-
-        @Override
-        public void run() {
-            BufferedInputStream bis = new BufferedInputStream(inputStream);
-            StringBuilder buffer = new StringBuilder();
-            final StringBuilder sbConsole = new StringBuilder();
-
-            while (isConnected) {
-                try {
-                    int bytes = bis.read();
-                    buffer.append((char) bytes);
-                    int eof = buffer.indexOf("\r\n");
-
-                    if (eof > 0) {
-                        sbConsole.append(buffer.toString());
-                        lastSensorValues = buffer.toString();
-                        buffer.delete(0, buffer.length());
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                bis.close();
-                cancel();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void write(String command) {
-            byte[] bytes = command.getBytes();
-            if (outputStream != null) {
-                try {
-                    outputStream.write(bytes);
-                    outputStream.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        public void cancel() {
-            try {
-                isConnected = false;
-                inputStream.close();
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void enableCheckBox(int led, boolean state) {
-        if (connectedThread != null && connectThread.isConnect()) {
+    private void enableCheckBox(int led, boolean state) throws BluetoothException, IOException {
+//        if (connectedThread != null && connectThread.isConnect()) {
+        if (bluetoothConnector.isConnected()) {
             String command = "";
             switch (led) {
                 case BUZZER:
@@ -743,7 +828,7 @@ public class MainActivity extends AppCompatActivity implements
                     command = (state) ? "led on#" : "led off#";
                     break;
             }
-            connectedThread.write(command);
+            bluetoothConnector.write(command.getBytes());
         }
     }
 
@@ -760,6 +845,9 @@ public class MainActivity extends AppCompatActivity implements
         return null;
     }
 
+//    private String readStream(){
+//
+//    }
 
     private void startTimer() {
         cancelTimer();
@@ -768,6 +856,9 @@ public class MainActivity extends AppCompatActivity implements
         handler.postDelayed(timer = new Runnable() {
             @Override
             public void run() {
+//                if(bluetoothConnector.getLastSensorValues() != null){
+//                    lastSensorValues = bluetoothConnector.getLastSensorValues();
+//                }
                 etConsole.setText(lastSensorValues);
                 etConsole.setMovementMethod(movementMethod);
                 Map dataSensor = parseData(lastSensorValues);
