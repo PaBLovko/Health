@@ -24,18 +24,11 @@ public class BluetoothConnector extends Thread{
     private static BluetoothAdapter mBluetoothAdapter;
 
     private BluetoothSocket socket;
-    private DataOutputStream outStream;
-    private DataInputStream inputStream;
     private ArrayList<BluetoothDevice> bluetoothDevices;
-    private String lastSensorValues;
 
     public BluetoothConnector(){
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-//        socket = null;
-//        outStream = null;
-//        inputStream = null;
         bluetoothDevices = new ArrayList<>();
-//        lastSensorValues = "";
     }
 
     public synchronized void connect(BluetoothDevice device) throws BluetoothException {
@@ -47,121 +40,108 @@ public class BluetoothConnector extends Thread{
             Method m = device.getClass().getMethod("createRfcommSocket", int.class);
             socket = (BluetoothSocket) m.invoke(device, 1);
             socket.connect();
-
-            outStream = new DataOutputStream(socket.getOutputStream());
-            inputStream = new DataInputStream(socket.getInputStream());
         } catch (Exception e) {
             socket = null;
             throw new ConnectionBluetoothException(e);
         }
     }
 
-    @Override
-    public void run() {
-        BufferedInputStream bis = new BufferedInputStream(inputStream);
-        StringBuilder buffer = new StringBuilder();
-        final StringBuilder sbConsole = new StringBuilder();
-        while (isConnected()) {
+    public static class ConnectedThread  extends  Thread {
+        private final DataOutputStream outputStream;
+        private final DataInputStream inputStream;
+        private boolean isConnected;
+        private String lastSensorValues;
+
+        public ConnectedThread(BluetoothSocket bluetoothSocket) {
+            DataInputStream inputStream = null;
+            DataOutputStream outputStream = null;
             try {
-                int bytes = bis.read();
-                buffer.append((char) bytes);
-                int eof = buffer.indexOf("\r\n");
+                outputStream = new DataOutputStream(bluetoothSocket.getOutputStream());
+                inputStream = new DataInputStream(bluetoothSocket.getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
+            isConnected = true;
+        }
 
-                if (eof > 0) {
-                    sbConsole.append(buffer.toString());
-                    lastSensorValues = buffer.toString();
-                    buffer.delete(0, buffer.length());
+        @Override
+        public void run() {
+            BufferedInputStream bis = new BufferedInputStream(inputStream);
+            StringBuilder buffer = new StringBuilder();
+            final StringBuilder sbConsole = new StringBuilder();
+            try {
+                while (isConnected) {
+                    int bytes = bis.read();
+                    buffer.append((char) bytes);
+                    int eof = buffer.indexOf("\r\n");
+                    if (eof > 0) {
+                        sbConsole.append(buffer.toString());
+                        lastSensorValues = buffer.toString();
+                        buffer.delete(0, buffer.length());
+                    }
                 }
-
-            } catch (IOException  e) {
+                bis.close();
+                disconnect();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        try {
-            bis.close();
-            disconnect();
-        } catch (BluetoothException | IOException e) {
-            e.printStackTrace();
+
+        public boolean isConnected() {
+            return isConnected;
+        }
+
+        public String getLastSensorValues() {
+            return lastSensorValues;
+        }
+
+        public synchronized void disconnect() throws IOException {
+            if (outputStream != null) outputStream.close();
+            if (inputStream != null) inputStream.close();
+            isConnected = false;
+        }
+
+        public void write(byte[]command) throws BluetoothException, IOException {
+            if (outputStream != null) {
+                outputStream.write(command);
+                outputStream.flush();
+            } else {
+                throw new ConnectionBluetoothException("Not connected");
+            }
+        }
+
+        public int read() throws BluetoothException, IOException {
+            int result;
+            if (inputStream != null) {
+                result = inputStream.read();
+            } else {
+                throw new ConnectionBluetoothException("Not connected");
+            }
+            return result;
+        }
+
+        public int read(byte[]response) throws BluetoothException, IOException {
+            int result;
+            if (inputStream != null) {
+                result = inputStream.read(response);
+            } else {
+                throw new ConnectionBluetoothException("Not connected");
+            }
+            return result;
         }
     }
 
-    public void write(byte[]command) throws BluetoothException, IOException {
-        if (outStream != null) {
-            outStream.write(command);
-            outStream.flush();
-        } else {
-            throw new ConnectionBluetoothException("Not connected");
-        }
-    }
-
-    public int read() throws BluetoothException, IOException {
-        int result;
-        if (inputStream != null) {
-            result = inputStream.read();
-        } else {
-            throw new ConnectionBluetoothException("Not connected");
-        }
-        return result;
-    }
-
-
-    public int read(byte[]response) throws BluetoothException, IOException {
-        int result;
-        if (inputStream != null) {
-            result = inputStream.read(response);
-        } else {
-            throw new ConnectionBluetoothException("Not connected");
-        }
-        return result;
-    }
-
-    public synchronized void disconnect() throws BluetoothException {
+    public synchronized void disconnect() throws BluetoothException, IOException {
         cancelDiscovery();
-
-        if (outStream != null) {
-            try {
-                outStream.close();
-            } catch (IOException e) {}
-        }
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {}
-        }
-        if (socket != null) {
-            try {
-                socket.close();
-            } catch (IOException e) {}
-        }
+        if (socket != null) socket.close();
         socket = null;
     }
 
     public boolean isConnected() {
         return socket != null;
     }
-//    /***************************************************************
-//     * 	Static methods
-//     ***************************************************************/
-//    /**
-//     * get pared devices
-//     * @return devices
-//     * @throws BluetoothException
-//     */
-//    public static Map<String, String> getBondedDevices()
-//            throws BluetoothException {
-//        if (!isSupported())
-//            throw new NotSupportedBluetoothException();
-//
-//        Map<String, String> mPairedDevicesArrayAdapter = new HashMap<String, String>();
-//
-//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-//        if (pairedDevices.size() > 0) {
-//            for (BluetoothDevice device : pairedDevices) {
-//                mPairedDevicesArrayAdapter.put(device.getName(), device.getAddress());
-//            }
-//        }
-//        return mPairedDevicesArrayAdapter;
-//    }
     /***************************************************************
      * 	Static methods
      ***************************************************************/
@@ -295,12 +275,5 @@ public class BluetoothConnector extends Thread{
      */
     public BluetoothSocket getSocket() {
         return socket;
-    }
-    /**
-     * get last sensor values
-     * @return String
-     */
-    public String getLastSensorValues() {
-        return lastSensorValues;
     }
 }

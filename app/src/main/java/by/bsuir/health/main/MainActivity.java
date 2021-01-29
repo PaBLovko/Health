@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements
 //    private ImageView           imageview;
 
     private BluetoothConnector bluetoothConnector;
+    private BluetoothConnector.ConnectedThread connectedThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -218,10 +219,8 @@ public class MainActivity extends AppCompatActivity implements
         PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
             public void OnDelayChanged() throws BluetoothException, IOException {
-//                if (connectedThread != null && connectThread.isConnect()) {
-//                    connectedThread.write(preference.getDelayTimer() + "Delay#");
-                if (bluetoothConnector.isConnected()) {
-                    bluetoothConnector.write((preference.getDelayTimer() + "Delay#").getBytes());
+                if (connectedThread.isConnected()) {
+                    connectedThread.write((preference.getDelayTimer() + "Delay#").getBytes());
                 }
             }
         });
@@ -332,7 +331,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-//        if (connectedThread != null) {
         if (bluetoothConnector.isConnected()) {
             startTimer();
         }
@@ -344,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements
         unregisterReceiver(receiver);
         try {
             disconnection();
-        } catch (BluetoothException e) {
+        } catch (BluetoothException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -352,9 +350,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(View v) {
         if (v.equals(btnEnableSearch)) {
-//            enableSearch();
             try {
-                bluetoothConnector.enableSearch();
+                BluetoothConnector.enableSearch();
             } catch (BluetoothException e) {
                 e.printStackTrace();
             }
@@ -366,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (v.equals(btnDisconnect)) {
             try {
                 disconnection();
-            } catch (BluetoothException e) {
+            } catch (BluetoothException | IOException e) {
                 e.printStackTrace();
             }
             showFrameControls();
@@ -375,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (v.equals(btnStorage)){
             try {
                 disconnection();
-            } catch (BluetoothException e) {
+            } catch (BluetoothException | IOException e) {
                 e.printStackTrace();
             }
             setListFile();
@@ -389,11 +386,10 @@ public class MainActivity extends AppCompatActivity implements
         listImages.setAdapter(listFile);
     }
 
-    private void disconnection() throws BluetoothException {
+    private void disconnection() throws BluetoothException, IOException {
         cancelTimer();
-//        if (connectedThread != null) connectedThread.cancel();
-//        if (connectThread != null) connectThread.cancel();
         if (bluetoothConnector.isConnected()) bluetoothConnector.disconnect();
+        if (connectedThread.isConnected()) connectedThread.disconnect();
     }
 
     @Override
@@ -582,7 +578,8 @@ public class MainActivity extends AppCompatActivity implements
                         pbProgress.setVisibility(View.GONE);
                         break;
                     case BluetoothDevice.ACTION_FOUND:
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        BluetoothDevice device =
+                                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         if (device != null) {
                             bluetoothConnector.add(device);
                             listAdapter.notifyDataSetChanged();
@@ -624,44 +621,16 @@ public class MainActivity extends AppCompatActivity implements
         return device.equals(nameDevice);
     }
 
-    private void readStream(){
-        StringBuilder buffer = new StringBuilder();
-        final StringBuilder sbConsole = new StringBuilder();
-        try {
-            while (bluetoothConnector.isConnected()) {
-                int bytes = bluetoothConnector.read();
-                buffer.append((char) bytes);
-                int eof = buffer.indexOf("\r\n");
-
-                if (eof > 0) {
-                    sbConsole.append(buffer.toString());
-                    lastSensorValues = buffer.toString();
-                    buffer.delete(0, buffer.length());
-                }
-            }
-            bluetoothConnector.disconnect();
-        } catch (IOException | BluetoothException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void connectToExisting(BluetoothDevice device) throws BluetoothException {
         progressDialog.show();
         if(isDevice(device.getName()))
             bluetoothConnector.connect(device);
-        else throw new ConnectionBluetoothException("Not connected to this device");;
+        else throw new ConnectionBluetoothException("Not connected to this device");
         saveMacAddress(device.getAddress());
+        connectedThread = new BluetoothConnector.ConnectedThread(bluetoothConnector.getSocket());
+        connectedThread.start();
         progressDialog.dismiss();
-//        bluetoothConnector = new BluetoothConnector();
-        bluetoothConnector.start();
         showFrameLedControls();
-//            runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                showFrameLedControls();
-////                readStream();
-//            }
-//        });
         startTimer();
     }
 
@@ -677,147 +646,7 @@ public class MainActivity extends AppCompatActivity implements
         editor.apply();
     }
 
-//    private class ConnectThread extends Thread {
-//        private BluetoothSocket bluetoothSocket = null;
-//        private boolean success = false;
-//        private String nameThisDevice;
-//        private String macAddressNow;
-//        private String nameDevice;
-//
-//        public ConnectThread(BluetoothDevice device) {
-//            try {
-//                Method method = device.getClass().getMethod("createRfcommSocket", int.class);
-//                bluetoothSocket = (BluetoothSocket) method.invoke(device, 1);
-//                progressDialog.show();
-//                nameDevice = "HC-05";
-//                nameThisDevice = device.getName();
-//                macAddressNow = device.getAddress();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        @Override
-//        public void run() {
-//            try {
-//                bluetoothSocket.connect();
-//                success = nameThisDevice.equals(nameDevice);
-//                progressDialog.dismiss();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        progressDialog.dismiss();
-//                        Toast.makeText(MainActivity.this,
-//                                "Не могу соединиться!",Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//                cancel();
-//            }
-//            if (success) {
-//                saveMacAddress(macAddressNow);
-//                connectedThread = new ConnectedThread(bluetoothSocket);
-//                connectedThread.start();
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        showFrameLedControls();
-//                    }
-//                });
-//            }
-//        }
-//
-//        public boolean isConnect() {
-//            return bluetoothSocket.isConnected();
-//        }
-//
-//        public void cancel() {
-//            try {
-//                Log.d(TAG, "cancel: " + this.getClass().getSimpleName());
-//                bluetoothSocket.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
-//    private class ConnectedThread  extends  Thread {
-//        private final InputStream inputStream;
-//        private final OutputStream outputStream;
-//        private boolean isConnected;
-//
-//        public ConnectedThread(BluetoothSocket bluetoothSocket) {
-//            InputStream inputStream = null;
-//            OutputStream outputStream = null;
-//
-//            try {
-//                inputStream = bluetoothSocket.getInputStream();
-//                outputStream = bluetoothSocket.getOutputStream();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            this.inputStream = inputStream;
-//            this.outputStream = outputStream;
-//            isConnected = true;
-//        }
-//
-//        @Override
-//        public void run() {
-//            BufferedInputStream bis = new BufferedInputStream(inputStream);
-//            StringBuilder buffer = new StringBuilder();
-//            final StringBuilder sbConsole = new StringBuilder();
-//
-//            while (isConnected) {
-//                try {
-//                    int bytes = bis.read();
-//                    buffer.append((char) bytes);
-//                    int eof = buffer.indexOf("\r\n");
-//
-//                    if (eof > 0) {
-//                        sbConsole.append(buffer.toString());
-//                        lastSensorValues = buffer.toString();
-//                        buffer.delete(0, buffer.length());
-//                    }
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            try {
-//                bis.close();
-//                cancel();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        public void write(String command) {
-//            byte[] bytes = command.getBytes();
-//            if (outputStream != null) {
-//                try {
-//                    outputStream.write(bytes);
-//                    outputStream.flush();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//
-//        public void cancel() {
-//            try {
-//                isConnected = false;
-//                inputStream.close();
-//                outputStream.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
     private void enableCheckBox(int led, boolean state) throws BluetoothException, IOException {
-//        if (connectedThread != null && connectThread.isConnect()) {
         if (bluetoothConnector.isConnected()) {
             String command = "";
             switch (led) {
@@ -828,7 +657,7 @@ public class MainActivity extends AppCompatActivity implements
                     command = (state) ? "led on#" : "led off#";
                     break;
             }
-            bluetoothConnector.write(command.getBytes());
+            connectedThread.write(command.getBytes());
         }
     }
 
@@ -845,10 +674,6 @@ public class MainActivity extends AppCompatActivity implements
         return null;
     }
 
-//    private String readStream(){
-//
-//    }
-
     private void startTimer() {
         cancelTimer();
         handler = new Handler();
@@ -856,9 +681,9 @@ public class MainActivity extends AppCompatActivity implements
         handler.postDelayed(timer = new Runnable() {
             @Override
             public void run() {
-//                if(bluetoothConnector.getLastSensorValues() != null){
-//                    lastSensorValues = bluetoothConnector.getLastSensorValues();
-//                }
+                if(connectedThread.getLastSensorValues() != null){
+                    lastSensorValues = connectedThread.getLastSensorValues();
+                }
                 etConsole.setText(lastSensorValues);
                 etConsole.setMovementMethod(movementMethod);
                 Map dataSensor = parseData(lastSensorValues);
