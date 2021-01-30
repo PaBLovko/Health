@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,14 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -43,20 +35,17 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import by.bsuir.health.CheckPermissionUtil;
+import by.bsuir.health.ViewActivity;
+import by.bsuir.health.util.CheckPermissionUtil;
 import by.bsuir.health.ImageFileFilter;
 import by.bsuir.health.ListAdapter;
 import by.bsuir.health.ListFile;
@@ -89,26 +78,21 @@ public class MainActivity extends AppCompatActivity implements
     public  static final int    LED               = 31;
     private static final String KEY_MAC_ADDRESS   = "key_mac_address";
 
-    private FrameLayout    frameMessage;
-    private LinearLayout   frameControls;
-
-    private LinearLayout        frameStorage;
     private String              storageDirectory;
-    private ListView            listImages;
+//    private ListView            listImages;
     private ArrayList<SdFile>   sdFiles;
 
-    private RelativeLayout frameLedControls;
-    private Button         btnDisconnect;
-    private Button         btnStart;
-    private Button         btnStorage;
-    private Switch         switchBuzzer;
-    private Switch         switchLed;
-    private EditText       etConsole;
-
-    private Switch         switchEnableBt;
-    private Button         btnEnableSearch;
-    private ProgressBar    pbProgress;
-    private ListView       listDevices;
+//    private Button         btnDisconnect;
+//    private Button         btnStart;
+//    private Button         btnStorage;
+//    private Switch         switchBuzzer;
+//    private Switch         switchLed;
+//    private EditText       etConsole;
+//
+    private Switch switchEnableBt;
+//    private Button         btnEnableSearch;
+//    private ProgressBar    pbProgress;
+//    private ListView       listDevices;
 
     private ListAdapter    listAdapter;
     private ListFile       listFile;
@@ -134,56 +118,69 @@ public class MainActivity extends AppCompatActivity implements
     private BluetoothConnector bluetoothConnector;
     private BluetoothConnector.ConnectedThread connectedThread;
 
+    private ViewActivity viewActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        frameMessage        = findViewById(R.id.frame_message);
-        frameControls       = findViewById(R.id.frame_control);
-        frameStorage        = findViewById(R.id.frame_storage);
-        listImages          = findViewById(R.id.lv_image);
-
+        viewActivity = new ViewActivity(this);
+//        listImages          = findViewById(R.id.lv_image);
+//
         switchEnableBt      = findViewById(R.id.switch_enable_bt);
-        btnEnableSearch     = findViewById(R.id.btn_enable_search);
-        pbProgress          = findViewById(R.id.pb_progress);
-        listDevices         = findViewById(R.id.lv_device);
-
-        frameLedControls    = findViewById(R.id.frameLedControls);
-        btnDisconnect       = findViewById(R.id.btn_disconnect);
-        btnStart            = findViewById(R.id.btn_start);
-        btnStorage          = findViewById(R.id.btn_storage);
-        switchBuzzer        = findViewById(R.id.switch_buzzer);
-        switchLed           = findViewById(R.id.switch_led);
-        etConsole           = findViewById(R.id.et_console);
-
-        GraphView gvGraph   = findViewById(R.id.gv_graph);
+//        btnEnableSearch     = findViewById(R.id.btn_enable_search);
+//        pbProgress          = findViewById(R.id.pb_progress);
+//        listDevices         = findViewById(R.id.lv_device);
+//
+//        btnDisconnect       = findViewById(R.id.btn_disconnect);
+//        btnStart            = findViewById(R.id.btn_start);
+//        btnStorage          = findViewById(R.id.btn_storage);
+//        switchBuzzer        = findViewById(R.id.switch_buzzer);
+//        switchLed           = findViewById(R.id.switch_led);
+//        etConsole           = findViewById(R.id.et_console);
+//
 
         preference          = new PrefModel(this);
         sharedPreferences   = getSharedPreferences("MAC_ADDRESS", MODE_PRIVATE);
 
+        GraphView gvGraph   = findViewById(R.id.gv_graph);
         seriesTemp                  = new LineGraphSeries();
         seriesRand                  = new LineGraphSeries();
         seriesTemp.setColor(Color.GREEN);
         seriesRand.setColor(Color.RED);
-
         gvGraph.addSeries(seriesTemp);
         gvGraph.addSeries(seriesRand);
         gvGraph.getViewport().setMinX(0);
         gvGraph.getViewport().setMaxX(preference.getPointsCount());
         gvGraph.getViewport().setXAxisBoundsManual(true);
 
+//        viewActivity.getGvGraph().addSeries(viewActivity.getSeriesTemp());
+//        viewActivity.getGvGraph().addSeries(viewActivity.getSeriesRand());
+//        viewActivity.getGvGraph().getViewport().setMinX(0);
+//        viewActivity.getGvGraph().getViewport().setMaxX(preference.getPointsCount());
+//        viewActivity.getGvGraph().getViewport().setXAxisBoundsManual(true);
+//        viewActivity.setGvGraph(preference.getPointsCount());
+
         switchEnableBt.setOnCheckedChangeListener(this);
-        btnEnableSearch.setOnClickListener(this);
-        listDevices.setOnItemClickListener(this);
+        viewActivity.getSwitchEnableBt().setOnCheckedChangeListener(this);
+//        btnEnableSearch.setOnClickListener(this);
+        viewActivity.getBtnEnableSearch().setOnClickListener(this);
+//        listDevices.setOnItemClickListener(this);
+        viewActivity.getListDevices().setOnItemClickListener(this);
 
-        btnStorage.setOnClickListener(this);
-        listImages.setOnItemClickListener(this);
+//        btnStorage.setOnClickListener(this);
+        viewActivity.getBtnStorage().setOnClickListener(this);
+//        listImages.setOnItemClickListener(this);
+        viewActivity.getListImages().setOnItemClickListener(this);
 
-        btnStart.setOnClickListener(this);
-        btnDisconnect.setOnClickListener(this);
-        switchLed.setOnCheckedChangeListener(this);
-        switchBuzzer.setOnCheckedChangeListener(this);
+//        btnStart.setOnClickListener(this);
+        viewActivity.getBtnStart().setOnClickListener(this);
+//        btnDisconnect.setOnClickListener(this);
+        viewActivity.getBtnDisconnect().setOnClickListener(this);
+//        switchLed.setOnCheckedChangeListener(this);
+        viewActivity.getSwitchLed().setOnCheckedChangeListener(this);
+//        switchBuzzer.setOnCheckedChangeListener(this);
+        viewActivity.getSwitchBuzzer().setOnCheckedChangeListener(this);
 
         sdFiles = new ArrayList<>();
 
@@ -208,8 +205,9 @@ public class MainActivity extends AppCompatActivity implements
 
         try {
             if (BluetoothConnector.isEnabled()) {
-                showFrameControls();
-                switchEnableBt.setChecked(true);
+                viewActivity.showFrameControls();
+                viewActivity.setSwitchEnableBtChecked(true);
+//                switchEnableBt.setChecked(true);
                 setListAdapter(BT_BOUNDED);
             }
         } catch (BluetoothException e) {
@@ -253,7 +251,8 @@ public class MainActivity extends AppCompatActivity implements
         }
         @Override
         public void repeatPermissions() {
-            checkPermissionUtil.checkPermissions(MainActivity.this, permissions, permissionsResult);
+            checkPermissionUtil.checkPermissions(
+                    MainActivity.this, permissions, permissionsResult);
         }
     };
 
@@ -294,7 +293,10 @@ public class MainActivity extends AppCompatActivity implements
 
     public ArrayList<SdFile> updateSdList(ArrayList<File> files){
         ArrayList<SdFile> sdFiles = new ArrayList<>();
-        for (File file : files) sdFiles.add(new SdFile(BitmapFactory.decodeFile(file.getAbsolutePath()), file.getName(), file.lastModified()));
+        for (File file : files) sdFiles.add(new SdFile(
+                BitmapFactory.decodeFile(file.getAbsolutePath()),
+                file.getName(),
+                file.lastModified()));
         return sdFiles;
     }
 
@@ -349,7 +351,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View v) {
-        if (v.equals(btnEnableSearch)) {
+//        if (v.equals(btnEnableSearch)) {
+        if (v.equals(viewActivity.getSwitchEnableBt())) {
             try {
                 BluetoothConnector.enableSearch();
             } catch (BluetoothException e) {
@@ -360,30 +363,36 @@ public class MainActivity extends AppCompatActivity implements
             } catch (BluetoothException e) {
                 e.printStackTrace();
             }
-        } else if (v.equals(btnDisconnect)) {
+//        } else if (v.equals(btnDisconnect)) {
+        } else if (v.equals(viewActivity.getBtnDisconnect())) {
             try {
                 disconnection();
             } catch (BluetoothException | IOException e) {
                 e.printStackTrace();
             }
-            showFrameControls();
-        } else if (v.equals(btnStart)){
+            viewActivity.showFrameControls();
+//            showFrameControls();
+//        } else if (v.equals(btnStart)){
+        } else if (v.equals(viewActivity.getBtnStart())){
 //
-        } else if (v.equals(btnStorage)){
+//        } else if (v.equals(btnStorage)){
+        } else if (v.equals(viewActivity.getBtnStorage())){
             try {
                 disconnection();
             } catch (BluetoothException | IOException e) {
                 e.printStackTrace();
             }
             setListFile();
-            showFrameStorage();
+            viewActivity.showFrameStorage();
         }
     }
 
     private void setListFile() {
         sdFiles = updateSdList(getFiles(storageDirectory));
         listFile = new ListFile(this, sdFiles);
-        listImages.setAdapter(listFile);
+//        listImages.setAdapter(listFile);
+       viewActivity.setListImages(listFile);
+
     }
 
     private void disconnection() throws BluetoothException, IOException {
@@ -394,11 +403,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent.equals(listDevices)) {
+//        if (parent.equals(listDevices)) {
+        if (parent.equals(viewActivity.getListDevices())) {
             BluetoothDevice device = bluetoothConnector.getBluetoothDevices().get(position);
             if (device != null) {
-                btnEnableSearch.setText(R.string.start_search);
-                pbProgress.setVisibility(View.GONE);
+//                btnEnableSearch.setText(R.string.start_search);
+                viewActivity.setBtnEnableSearchStart();
+//                pbProgress.setVisibility(View.GONE);
+                viewActivity.setPbProgressNoVisibility();
                 try {
                     connectToExisting(device);
                 } catch (BluetoothException e) {
@@ -407,7 +419,8 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }
-        if (parent.equals(listImages)){
+//        if (parent.equals(listImages)){
+        if (parent.equals(viewActivity.getListImages())){
             SdFile sdFile = sdFiles.get(position);
             if (sdFile != null){
                 showImage(sdFile.getImage());
@@ -437,10 +450,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (buttonView.equals(switchEnableBt)) {
+//        if (buttonView.equals(switchEnableBt)) {
+        if (buttonView.equals(viewActivity.getSwitchEnableBt())) {
             enableBt(isChecked);
-            if (!isChecked) showFrameMessage();
-        } else if (buttonView.equals(switchBuzzer)) {
+            if (!isChecked) viewActivity.showFrameMessage();
+//        } else if (buttonView.equals(switchBuzzer)) {
+        } else if (buttonView.equals(viewActivity.getSwitchBuzzer())) {
             try {
                 enableCheckBox(BUZZER, isChecked); // TODO включение или отключение динамика
             } catch (BluetoothException e) {
@@ -449,7 +464,8 @@ public class MainActivity extends AppCompatActivity implements
                 e.printStackTrace();
             }
         }
-        else if (buttonView.equals(switchLed)) {
+//        else if (buttonView.equals(switchLed)) {
+        else if (buttonView.equals(viewActivity.getSwitchLed())) {
             try {
                 enableCheckBox(LED, isChecked);// TODO включение или отключение светодиода
             } catch (BluetoothException e) {
@@ -465,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements
         if (requestCode == REQ_ENABLE_BT) {
             try {
                 if (resultCode == RESULT_OK && BluetoothConnector.isEnabled()) {
-                    showFrameControls();
+                    viewActivity.showFrameControls();
                     setListAdapter(BT_BOUNDED);
                 } else if (resultCode == RESULT_CANCELED) {
                     enableBt(true);
@@ -505,34 +521,6 @@ public class MainActivity extends AppCompatActivity implements
         quitDialog.show();
     }
 
-    private void showFrameMessage() {
-        frameMessage.setVisibility(View.VISIBLE);
-        frameLedControls.setVisibility(View.GONE);
-        frameControls.setVisibility(View.GONE);
-        frameStorage.setVisibility(View.GONE);
-    }
-
-    private void showFrameControls() {
-        frameMessage.setVisibility(View.GONE);
-        frameLedControls.setVisibility(View.GONE);
-        frameControls.setVisibility(View.VISIBLE);
-        frameStorage.setVisibility(View.GONE);
-    }
-
-    private void showFrameLedControls() {
-        frameLedControls.setVisibility(View.VISIBLE);
-        frameMessage.setVisibility(View.GONE);
-        frameControls.setVisibility(View.GONE);
-        frameStorage.setVisibility(View.GONE);
-    }
-
-    private void showFrameStorage(){
-        frameLedControls.setVisibility(View.GONE);
-        frameMessage.setVisibility(View.GONE);
-        frameControls.setVisibility(View.GONE);
-        frameStorage.setVisibility(View.VISIBLE);
-    }
-
     private void enableBt(boolean flag) {
         if (flag) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -555,7 +543,8 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
         listAdapter = new ListAdapter(this, bluetoothConnector.getBluetoothDevices(), iconType);
-        listDevices.setAdapter(listAdapter);
+//        listDevices.setAdapter(listAdapter);
+        viewActivity.setListDevices(listAdapter);
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -565,8 +554,10 @@ public class MainActivity extends AppCompatActivity implements
             if (action != null) {
                 switch (action) {
                     case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-                        btnEnableSearch.setText(R.string.stop_search);
-                        pbProgress.setVisibility(View.VISIBLE);
+//                        btnEnableSearch.setText(R.string.stop_search);
+                        viewActivity.setBtnEnableSearchStop();
+//                        pbProgress.setVisibility(View.VISIBLE);
+                        viewActivity.setPbProgressVisibility();
                         try {
                             setListAdapter(BT_SEARCH);
                         } catch (BluetoothException e) {
@@ -574,8 +565,10 @@ public class MainActivity extends AppCompatActivity implements
                         }
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                        btnEnableSearch.setText(R.string.start_search);
-                        pbProgress.setVisibility(View.GONE);
+//                        btnEnableSearch.setText(R.string.start_search);
+                        viewActivity.setBtnEnableSearchStart();
+//                        pbProgress.setVisibility(View.GONE);
+                        viewActivity.setPbProgressNoVisibility();
                         break;
                     case BluetoothDevice.ACTION_FOUND:
                         BluetoothDevice device =
@@ -588,8 +581,10 @@ public class MainActivity extends AppCompatActivity implements
                             assert device != null;
                             if(device.getAddress().equals(sharedPreferences.getString(
                                     KEY_MAC_ADDRESS, ""))){
-                                btnEnableSearch.setText(R.string.start_search);
-                                pbProgress.setVisibility(View.GONE);
+//                                btnEnableSearch.setText(R.string.start_search);
+                                viewActivity.setBtnEnableSearchStart();
+//                                pbProgress.setVisibility(View.GONE);
+                                viewActivity.setPbProgressNoVisibility();
                                 try {
                                     setListAdapter(BT_SEARCH);
                                     connectToExisting(device);
@@ -630,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements
         connectedThread = new BluetoothConnector.ConnectedThread(bluetoothConnector.getSocket());
         connectedThread.start();
         progressDialog.dismiss();
-        showFrameLedControls();
+        viewActivity.showFrameLedControls();
         startTimer();
     }
 
@@ -684,8 +679,9 @@ public class MainActivity extends AppCompatActivity implements
                 if(connectedThread.getLastSensorValues() != null){
                     lastSensorValues = connectedThread.getLastSensorValues();
                 }
-                etConsole.setText(lastSensorValues);
-                etConsole.setMovementMethod(movementMethod);
+//                etConsole.setText(lastSensorValues);
+//                etConsole.setMovementMethod(movementMethod);
+                viewActivity.setEtConsoleAndMovementMethod(lastSensorValues, movementMethod);
                 Map dataSensor = parseData(lastSensorValues);
                 if (dataSensor != null) {
                     if (dataSensor.containsKey("Temp") && dataSensor.containsKey("rand")) {
