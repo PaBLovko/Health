@@ -1,6 +1,7 @@
 package by.bsuir.health;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.MovementMethod;
@@ -21,69 +22,49 @@ import com.jjoe64.graphview.series.LineGraphSeries;
  * @author Pablo on 30.01.2021
  * @project Health
  */
-public class ViewActivity extends View {
+public class ViewActivity extends AppCompatActivity {
+
+//    private IViewActivityResult iViewActivityResult;
+
     private final FrameLayout frameMessage;
     private final LinearLayout frameControls;
     private final RelativeLayout frameLedControls;
     private final LinearLayout frameStorage;
-
-    private ListView       listImages;
-
-    private Button         btnDisconnect;
-    private Button         btnStart;
-    private Button         btnStorage;
-
-    private Switch         switchBuzzer;
-    private Switch         switchLed;
-
-    private EditText       etConsole;
-
-    private Switch         switchEnableBt;
-
-    private Button         btnEnableSearch;
-
-    private ProgressBar    pbProgress;
-
-    private ListView       listDevices;
-
-    private GraphView      gvGraph;
-
+    private final ListView listImages;
+    private final Button btnDisconnect;
+    private final Button btnStart;
+    private final Button btnStorage;
+    private final Button btnEnableSearch;
+    private final Switch switchBuzzer;
+    private final Switch switchLed;
+    private final EditText etConsole;
+    private Switch switchEnableBt;
+    private final ProgressBar pbProgress;
+    private final ListView listDevices;
+    private final GraphView gvGraph;
     private LineGraphSeries seriesTemp;
     private LineGraphSeries seriesRand;
-
     private ProgressDialog      progressDialog;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
-        super(appCompatActivity);
         frameMessage        = appCompatActivity.findViewById(R.id.frame_message);
         frameControls       = appCompatActivity.findViewById(R.id.frame_control);
         frameStorage        = appCompatActivity.findViewById(R.id.frame_storage);
         frameLedControls    = appCompatActivity.findViewById(R.id.frameLedControls);
-        listImages          = findViewById(R.id.lv_image);
-
-        switchEnableBt      = findViewById(R.id.switch_enable_bt);
-        btnEnableSearch     = findViewById(R.id.btn_enable_search);
-        pbProgress          = findViewById(R.id.pb_progress);
-        listDevices         = findViewById(R.id.lv_device);
-
-        btnDisconnect       = findViewById(R.id.btn_disconnect);
-        btnStart            = findViewById(R.id.btn_start);
-        btnStorage          = findViewById(R.id.btn_storage);
-        switchBuzzer        = findViewById(R.id.switch_buzzer);
-        switchLed           = findViewById(R.id.switch_led);
-        etConsole           = findViewById(R.id.et_console);
-
-        gvGraph   = findViewById(R.id.gv_graph);
-
+        listImages          = appCompatActivity.findViewById(R.id.lv_image);
+        switchEnableBt      = appCompatActivity.findViewById(R.id.switch_enable_bt);
+        btnEnableSearch     = appCompatActivity.findViewById(R.id.btn_enable_search);
+        pbProgress          = appCompatActivity.findViewById(R.id.pb_progress);
+        listDevices         = appCompatActivity.findViewById(R.id.lv_device);
+        btnDisconnect       = appCompatActivity.findViewById(R.id.btn_disconnect);
+        btnStart            = appCompatActivity.findViewById(R.id.btn_start);
+        btnStorage          = appCompatActivity.findViewById(R.id.btn_storage);
+        switchBuzzer        = appCompatActivity.findViewById(R.id.switch_buzzer);
+        switchLed           = appCompatActivity.findViewById(R.id.switch_led);
+        etConsole           = appCompatActivity.findViewById(R.id.et_console);
+        gvGraph             = appCompatActivity.findViewById(R.id.gv_graph);
         seriesTemp          = new LineGraphSeries();
         seriesRand          = new LineGraphSeries();
-        seriesTemp.setColor(Color.GREEN);
-        seriesRand.setColor(Color.RED);
-
-//        progressDialog = new ProgressDialog(context);
-//        progressDialog.setCancelable(false);
-//        progressDialog.setTitle(getString(R.string.connecting));
-//        progressDialog.setMessage(getString(R.string.please_wait));
     }
 
     public void showFrameMessage() {
@@ -115,6 +96,8 @@ public class ViewActivity extends View {
     }
 
     public void setGvGraph(int MaxX) {
+        this.seriesTemp.setColor(Color.GREEN);
+        this.seriesRand.setColor(Color.RED);
         this.gvGraph.addSeries(seriesTemp);
         this.gvGraph.addSeries(seriesRand);
         this.gvGraph.getViewport().setMinX(0);
@@ -127,6 +110,20 @@ public class ViewActivity extends View {
         return gvGraph;
     }
 
+    public void setProgressDialog(Context context) {
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle(context.getString(R.string.connecting));
+        progressDialog.setMessage(context.getString(R.string.please_wait));
+    }
+
+    public ProgressDialog getProgressDialog() {
+        return progressDialog;
+    }
+
+    public void setSwitchEnableBt(Switch switchEnableBt) {
+        this.switchEnableBt = switchEnableBt;
+    }
 
     public void setSwitchEnableBtChecked(boolean switchEnableBt) {
         this.switchEnableBt.setChecked(switchEnableBt);
@@ -205,5 +202,34 @@ public class ViewActivity extends View {
         return seriesRand;
     }
 
+
+    public void setSeriesTemp(LineGraphSeries seriesTemp) {
+        this.seriesTemp = seriesTemp;
+    }
+
+    public void setSeriesRand(LineGraphSeries seriesRand) {
+        this.seriesRand = seriesRand;
+    }
+
+//    @Override
+//    public void onClick(View v) {
+//        iViewActivityResult.onClick(v);
+//    }
+//
+//    @Override
+//    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//        iViewActivityResult.onItemClick(parent, view, position, id);
+//    }
+//
+//    @Override
+//    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        iViewActivityResult.onCheckedChanged(buttonView, isChecked);
+//    }
+//
+//    public interface IViewActivityResult {
+//        void onClick(View v);
+//        void onItemClick(AdapterView<?> parent, View view, int position, long id);
+//        void onCheckedChanged(CompoundButton buttonView, boolean isChecked);
+//    }
 }
 

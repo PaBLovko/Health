@@ -10,6 +10,8 @@ import java.util.List;
 
 import by.bsuir.health.bluetooth.exception.BluetoothException;
 
+import static android.content.Context.MODE_PRIVATE;
+
 
 public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -19,6 +21,9 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
     public static final String KEY_POINTS_COUNT         = "key_points_count";
     public static final String KEY_OPERATION_MODE       = "key_operating_mode";
     public static final String KEY_LAST_CONNECT_DEVICE  = "key_last_connect_device";
+    public static final String KEY_MAC_ADDRESS          = "key_mac_address";
+
+    private final SharedPreferences sharedPreferences;
 
     private int     delayTimer;
     private int     pointsCount;
@@ -30,6 +35,7 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
         this.pointsCount                = 300;
         this.operationMode              = "";
         this.lastConnectDevice          = false;
+        this.sharedPreferences = context.getSharedPreferences(KEY_MAC_ADDRESS, MODE_PRIVATE);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.registerOnSharedPreferenceChangeListener(this);
         uploadingDataToSettings(preferences);
@@ -61,11 +67,21 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
         this.lastConnectDevice = lastConnectDevice;
     }
 
+    public SharedPreferences getSharedPreferences() {
+        return sharedPreferences;
+    }
+
     private void uploadingDataToSettings(SharedPreferences preferences){
         onSharedPreferenceChanged(preferences, KEY_DELAY_TIMER);
         onSharedPreferenceChanged(preferences, KEY_POINTS_COUNT);
         onSharedPreferenceChanged(preferences, KEY_OPERATION_MODE);
         onSharedPreferenceChanged(preferences, KEY_LAST_CONNECT_DEVICE);
+    }
+
+    public void saveMacAddress(String macAddressNow){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_MAC_ADDRESS, macAddressNow);
+        editor.apply();
     }
 
     public static void addDelayListener(OnDelayChangedListener l) {
