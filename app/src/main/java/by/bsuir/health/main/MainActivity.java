@@ -2,7 +2,6 @@ package by.bsuir.health.main;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -10,32 +9,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.method.MovementMethod;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.Toast;
-
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,9 +31,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
+import by.bsuir.health.Pulse;
 import by.bsuir.health.ViewActivity;
 import by.bsuir.health.util.CheckPermissionUtil;
 import by.bsuir.health.ImageFileFilter;
@@ -92,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements
     private int xTempLastValue = 0;
     private int xRandLastValue = 0;
 
+    private Pulse pulse;
+
     private PrefModel preference;
 
     private CheckPermissionUtil checkPermissionUtil;
@@ -108,23 +97,15 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        controllerActivity = new ControllerActivity(this);
-        viewActivity = new ViewActivity(this);
         preference = new PrefModel(this);
-
+        viewActivity = new ViewActivity(this);
         viewActivity.setGvGraph(preference.getPointsCount());
-
         viewActivity.setProgressDialog(this);
-
         setListeners();
 
         sdFiles = new ArrayList<>();
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
-
+        addReceiver();
         bluetoothConnector = new BluetoothConnector();
 
         if (BluetoothConnector.getBluetoothAdapter() == null) {
@@ -152,13 +133,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        permissions = new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        };
-
+        addPermissions();
         checkPermissionUtil = CheckPermissionUtil.getInstance();
         checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
 
@@ -166,6 +141,23 @@ public class MainActivity extends AppCompatActivity implements
                 Environment.getExternalStorageDirectory().toString() + "/" + DIR_SD;
 
 //        imageview = (ImageView) findViewById();
+    }
+
+    private void addPermissions() {
+        permissions = new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+    }
+
+    private void addReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
     }
 
     void setListeners(){
@@ -186,13 +178,10 @@ public class MainActivity extends AppCompatActivity implements
                 public void passPermissions() {
                     Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
                 }
-
                 @Override
                 public void forbidPermissions() {
                     //TODO finish
-                    //System.out.println("finish");
                 }
-
                 @Override
                 public void repeatPermissions() {
                     checkPermissionUtil.checkPermissions(
@@ -289,14 +278,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        cancelTimer();
+        if(pulse != null) pulse.cancelTimer();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (bluetoothConnector.isConnected()) {
-            startTimer();
+            pulse.startTimer();
         }
     }
 
@@ -313,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View v) {
-//    public void onClickController(View v) {
         if (v.equals(viewActivity.getBtnEnableSearch())) {
             try {
                 BluetoothConnector.enableSearch();
@@ -333,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements
             }
             viewActivity.showFrameControls();
         } else if (v.equals(viewActivity.getBtnStart())){
-//
+//TODO START TIMER (1 MIN)
         } else if (v.equals(viewActivity.getBtnStorage())){
             try {
                 disconnection();
@@ -353,14 +341,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void disconnection() throws BluetoothException, IOException {
-        cancelTimer();
+        pulse.cancelTimer();
         if (bluetoothConnector.isConnected()) bluetoothConnector.disconnect();
         if (connectedThread.isConnected()) connectedThread.disconnect();
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//    public void onItemClickController(AdapterView<?> parent, View view, int position, long id) {
         if (parent.equals(viewActivity.getListDevices())) {
             BluetoothDevice device = bluetoothConnector.getBluetoothDevices().get(position);
             if (device != null) {
@@ -383,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void showImage(Bitmap bitmap){
+        //TODO showImageFullScreen
 //        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
 //        DisplayMetrics displayMetrics = new DisplayMetrics();
 //        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -404,13 +392,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//    public void onCheckedChangedController(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.equals(viewActivity.getSwitchEnableBt())) {
             enableBt(isChecked);
             if (!isChecked) viewActivity.showFrameMessage();
         } else if (buttonView.equals(viewActivity.getSwitchBuzzer())) {
             try {
-                enableCheckBox(BUZZER, isChecked); // TODO включение или отключение динамика
+                enableCheckBox(BUZZER, isChecked); // включение или отключение динамика
             } catch (BluetoothException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -419,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         else if (buttonView.equals(viewActivity.getSwitchLed())) {
             try {
-                enableCheckBox(LED, isChecked);// TODO включение или отключение светодиода
+                enableCheckBox(LED, isChecked);// включение или отключение светодиода
             } catch (BluetoothException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -571,7 +558,8 @@ public class MainActivity extends AppCompatActivity implements
         connectedThread.start();
         viewActivity.getProgressDialog().dismiss();
         viewActivity.showFrameLedControls();
-        startTimer();
+        pulse = new Pulse(connectedThread, preference, viewActivity);
+        pulse.startTimer();
     }
 
     @Override
@@ -592,64 +580,6 @@ public class MainActivity extends AppCompatActivity implements
                     break;
             }
             connectedThread.write(command.getBytes());
-        }
-    }
-
-    private Map parseData(String data) {    // temp:37|humidity:80
-        if (data.indexOf('|') > 0) {
-            HashMap map = new HashMap();
-            String[] pairs = data.split("\\|");
-            for (String pair: pairs) {
-                String[] keyValue = pair.split(":");
-                map.put(keyValue[0], keyValue[1]);
-            }
-            return map;
-        }
-        return null;
-    }
-
-    private void startTimer() {
-        cancelTimer();
-        handler = new Handler();
-        final MovementMethod movementMethod = new ScrollingMovementMethod();
-        handler.postDelayed(timer = new Runnable() {
-            @Override
-            public void run() {
-                if(connectedThread.getLastSensorValues() != null){
-                    lastSensorValues = connectedThread.getLastSensorValues();
-                }
-//                etConsole.setText(lastSensorValues);
-//                etConsole.setMovementMethod(movementMethod);
-                viewActivity.setEtConsoleAndMovementMethod(lastSensorValues, movementMethod);
-                Map dataSensor = parseData(lastSensorValues);
-                if (dataSensor != null) {
-                    if (dataSensor.containsKey("Temp") && dataSensor.containsKey("rand")) {
-                        int temp = Integer.parseInt(dataSensor.get("Temp").toString());
-                        int rand = Integer.parseInt(dataSensor.get("rand").toString().trim());
-
-                        if(preference.getOperationMode().equals("pulse")){
-                               viewActivity.getSeriesTemp().appendData(new DataPoint(xTempLastValue, temp), true, preference.getPointsCount());
-//                            seriesTemp.appendData(new DataPoint(xTempLastValue, temp), true, preference.getPointsCount());
-                        }
-                        if(preference.getOperationMode().equals("spo")){
-//                            seriesRand.appendData(new DataPoint(xRandLastValue, rand), true, preference.getPointsCount());
-                        }
-                        if(preference.getOperationMode().equals("cardio")){
-                            //seriesTemp.appendData(new DataPoint(xTempLastValue, temp), true, preference.getPointsCount());
-                        }
-//                        Toast.makeText(MainActivity.this, "Millis: " + dataSensor.get("millis"), Toast.LENGTH_SHORT).show();
-                    }
-                    xTempLastValue++;
-                    xRandLastValue++;
-                }
-                handler.postDelayed(this, preference.getDelayTimer());
-            }
-        }, preference.getDelayTimer());
-    }
-
-    private void cancelTimer() {
-        if (handler != null) {
-            handler.removeCallbacks(timer);
         }
     }
 }

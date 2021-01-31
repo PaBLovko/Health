@@ -6,8 +6,8 @@
         <item>@string/operating_mode_cardio</item>
     </string-array>
     <string-array name="mode_values">
-        <item>pulse</item>
-        <item>spo</item>
-        <item>cardio</item>
+        <item>@string/operating_mode_pulse</item>
+        <item>@string/operating_mode_spo</item>
+        <item>@string/operating_mode_cardio</item>
     </string-array>
 </resources>

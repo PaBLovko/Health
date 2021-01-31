@@ -1,5 +1,6 @@
 package by.bsuir.health;
 
+import android.app.Notification;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -42,9 +43,13 @@ public class ViewActivity extends AppCompatActivity {
     private final ProgressBar pbProgress;
     private final ListView listDevices;
     private final GraphView gvGraph;
-    private LineGraphSeries seriesTemp;
-    private LineGraphSeries seriesRand;
-    private ProgressDialog      progressDialog;
+    private LineGraphSeries seriesPulse;
+    private LineGraphSeries seriesCardio;
+    private LineGraphSeries seriesSpo;
+    private ProgressDialog progressDialog;
+    private String operatingModePulse;
+    private String operatingModeCardio;
+    private String operatingModeSpo;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
         appCompatActivity.setContentView(R.layout.activity_main);
@@ -64,8 +69,12 @@ public class ViewActivity extends AppCompatActivity {
         switchLed           = appCompatActivity.findViewById(R.id.switch_led);
         etConsole           = appCompatActivity.findViewById(R.id.et_console);
         gvGraph             = appCompatActivity.findViewById(R.id.gv_graph);
-        seriesTemp          = new LineGraphSeries();
-        seriesRand          = new LineGraphSeries();
+        operatingModePulse  = appCompatActivity.getString(R.string.operating_mode_pulse);
+        operatingModeCardio = appCompatActivity.getString(R.string.operating_mode_cardio);
+        operatingModeSpo    = appCompatActivity.getString(R.string.operating_mode_spo);
+        seriesPulse         = new LineGraphSeries();
+        seriesCardio        = new LineGraphSeries();
+        seriesSpo           = new LineGraphSeries();
     }
 
     public void showFrameMessage() {
@@ -97,10 +106,11 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     public void setGvGraph(int MaxX) {
-        this.seriesTemp.setColor(Color.GREEN);
-        this.seriesRand.setColor(Color.RED);
-        this.gvGraph.addSeries(seriesTemp);
-        this.gvGraph.addSeries(seriesRand);
+        this.seriesPulse.setColor(Color.GREEN);
+        this.seriesCardio.setColor(Color.RED);
+        this.seriesSpo.setColor(Color.BLUE);
+        this.gvGraph.addSeries(seriesPulse);
+        this.gvGraph.addSeries(seriesCardio);
         this.gvGraph.getViewport().setMinX(0);
         this.gvGraph.getViewport().setMaxX(MaxX);
         this.gvGraph.getViewport().setXAxisBoundsManual(true);
@@ -195,22 +205,39 @@ public class ViewActivity extends AppCompatActivity {
         this.etConsole.setMovementMethod(movementMethod);
     }
 
-    public LineGraphSeries getSeriesTemp() {
-        return seriesTemp;
+    public LineGraphSeries getSeriesSpo() {
+        return seriesSpo;
     }
 
-    public LineGraphSeries getSeriesRand() {
-        return seriesRand;
+    public LineGraphSeries getSeriesPulse() {
+        return seriesPulse;
+    }
+
+    public LineGraphSeries getSeriesCardio() {
+        return seriesCardio;
     }
 
 
-    public void setSeriesTemp(LineGraphSeries seriesTemp) {
-        this.seriesTemp = seriesTemp;
+    public void setSeriesPulse(LineGraphSeries seriesPulse) {
+        this.seriesPulse = seriesPulse;
     }
 
-    public void setSeriesRand(LineGraphSeries seriesRand) {
-        this.seriesRand = seriesRand;
+    public void setSeriesCardio(LineGraphSeries seriesCardio) {
+        this.seriesCardio = seriesCardio;
     }
+
+    public String getOperatingModePulse() {
+        return operatingModePulse;
+    }
+
+    public String getOperatingModeCardio() {
+        return operatingModeCardio;
+    }
+
+    public String getOperatingModeSpo() {
+        return operatingModeSpo;
+    }
+
 
 //    @Override
 //    public void onClick(View v) {
