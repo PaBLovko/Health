@@ -47,6 +47,7 @@ public class ViewActivity extends AppCompatActivity {
     private ProgressDialog      progressDialog;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
+        appCompatActivity.setContentView(R.layout.activity_main);
         frameMessage        = appCompatActivity.findViewById(R.id.frame_message);
         frameControls       = appCompatActivity.findViewById(R.id.frame_control);
         frameStorage        = appCompatActivity.findViewById(R.id.frame_storage);

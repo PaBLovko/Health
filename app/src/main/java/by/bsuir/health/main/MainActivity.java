@@ -102,12 +102,12 @@ public class MainActivity extends AppCompatActivity implements
 
     private ViewActivity viewActivity;
 
+//    private ControllerActivity controllerActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+//        controllerActivity = new ControllerActivity(this);
         viewActivity = new ViewActivity(this);
         preference = new PrefModel(this);
 
