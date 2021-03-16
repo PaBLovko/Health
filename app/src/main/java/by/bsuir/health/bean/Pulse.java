@@ -1,6 +1,7 @@
 package by.bsuir.health.bean;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 
@@ -39,7 +40,7 @@ public class Pulse {
         this.preference = preference;
         this.viewActivity = viewActivity;
         this.movementMethod = new ScrollingMovementMethod();
-        this.handler = new Handler();
+        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public BluetoothConnector getBluetoothConnector() {

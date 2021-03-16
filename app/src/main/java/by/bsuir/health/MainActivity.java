@@ -1,6 +1,5 @@
 package by.bsuir.health;
 
-import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -15,12 +14,15 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
+import by.bsuir.health.bean.AsyncTaskConnect;
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.bean.ListAdapter;
 import by.bsuir.health.bean.Pulse;
 import by.bsuir.health.bean.SdFile;
 import by.bsuir.health.controller.BluetoothConnectorController;
+import by.bsuir.health.controller.SdFileController;
 import by.bsuir.health.controller.ThreadController;
 import by.bsuir.health.controller.ViewController;
 import by.bsuir.health.dao.preference.OnDelayChangedListener;
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         preference = new PrefModel(this);
         viewActivity = new ViewActivity(this);
         viewActivity.setGvGraph(preference.getPointsCount());
-        viewActivity.setProgressDialog(this);
+        new ViewController().setProgressDialog(this, viewActivity.getProgressDialog());
 
         sdFiles = new ArrayList<>();
 
@@ -105,7 +107,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        addPermissions();
+//        addPermissions();
+        permissions = new SdFileController().addPermissions();
         checkPermissionUtil = CheckPermissionUtil.getInstance();
         checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
 
@@ -123,24 +126,54 @@ public class MainActivity extends AppCompatActivity {
                 this, pulse);
         new BluetoothConnectorController().addReceiver(this, receiverService);
 
-        ItemClickService.addItemListener(new OnItemChangedListener() {
-            @Override
-            public void OnItemChanged() {
-                if (pulse == null) {
-                    pulse = itemClickService.getPulse();
-                    updateDataFoConnect();
-                    receiverService.setPulse(pulse);
-                }
-            }
-        });
+//        ItemClickService.addItemListener(new OnItemChangedListener() {
+//            @Override
+//            public void OnItemChanged() {
+//                if (pulse == null) {
+//                    try {
+//                        pulse = itemClickService.getAsyncTaskConnect().get();
+//                    } catch (ExecutionException e) {
+//                        e.printStackTrace();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+////                    pulse = itemClickService.getPulse();
+//                    updateDataFoConnect();
+//                    receiverService.setPulse(pulse);
+//                }
+//            }
+//        });
+//
+//        ReceiverService.addItemListener(new OnItemChangedListener() {
+//            @Override
+//            public void OnItemChanged() {
+//                if (pulse == null) {
+//                    pulse = receiverService.getPulse();
+//                    updateDataFoConnect();
+//                    itemClickService.setPulse(pulse);
+//                }
+//            }
+//        });
 
-        ReceiverService.addItemListener(new OnItemChangedListener() {
+        AsyncTaskConnect.addItemListener(new OnItemChangedListener() {
             @Override
             public void OnItemChanged() {
-                if (pulse == null) {
-                    pulse = receiverService.getPulse();
-                    updateDataFoConnect();
-                    itemClickService.setPulse(pulse);
+                if (pulse == null){
+                    try {
+                        if (itemClickService.getAsyncTaskConnect() != null){
+                            pulse = itemClickService.getAsyncTaskConnect().get();
+                            updateDataFoConnect();
+                            receiverService.setPulse(pulse);
+                        }else{
+                            pulse = receiverService.getAsyncTaskConnect().get();
+                            updateDataFoConnect();
+                            itemClickService.setPulse(pulse);
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -163,15 +196,15 @@ public class MainActivity extends AppCompatActivity {
         checkedChangeService.setBluetoothConnector(bluetoothConnector);
         clickService.setPulse(pulse);
     }
-
-    private void addPermissions() {
-        permissions = new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        };
-    }
+//
+//    private void addPermissions() {
+//        permissions = new String[]{
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                Manifest.permission.READ_EXTERNAL_STORAGE,
+//                Manifest.permission.ACCESS_FINE_LOCATION,
+//                Manifest.permission.ACCESS_COARSE_LOCATION
+//        };
+//    }
 
     CheckPermissionUtil.IPermissionsResult permissionsResult =
             new CheckPermissionUtil.IPermissionsResult() {

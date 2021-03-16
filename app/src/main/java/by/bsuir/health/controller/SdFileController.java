@@ -1,5 +1,6 @@
 package by.bsuir.health.controller;
 
+import android.Manifest;
 import android.graphics.BitmapFactory;
 
 import java.io.File;
@@ -23,5 +24,14 @@ public class SdFileController {
 
     public ArrayList<SdFile> getListFile(String storageDirectory) {
        return new SdFileController().updateSdList(new Storage(storageDirectory).getFiles());
+    }
+
+    public String[] addPermissions() {
+        return new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
     }
 }

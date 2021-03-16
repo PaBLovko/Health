@@ -10,6 +10,7 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.List;
 
+import by.bsuir.health.bean.AsyncTaskConnect;
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.bean.ListAdapter;
 import by.bsuir.health.bean.Pulse;
@@ -35,6 +36,7 @@ public class ReceiverService extends BroadcastReceiver {
     private ListAdapter listAdapter;
     private Activity activity;
     private Pulse pulse;
+    private AsyncTaskConnect asyncTaskConnect;
 
     public ReceiverService(ViewActivity viewActivity, BluetoothConnector bluetoothConnector,
                            PrefModel preference, ListAdapter listAdapter, Activity activity,
@@ -45,6 +47,7 @@ public class ReceiverService extends BroadcastReceiver {
         this.listAdapter = listAdapter;
         this.activity = activity;
         this.pulse = pulse;
+        this.asyncTaskConnect = null;
     }
 
     public Pulse getPulse() {
@@ -53,6 +56,10 @@ public class ReceiverService extends BroadcastReceiver {
 
     public void setPulse(Pulse pulse) {
         this.pulse = pulse;
+    }
+
+    public AsyncTaskConnect getAsyncTaskConnect() {
+        return asyncTaskConnect;
     }
 
     public static void addItemListener(OnItemChangedListener l) {
@@ -90,29 +97,42 @@ public class ReceiverService extends BroadcastReceiver {
                         assert device != null;
                         if(device.getAddress().equals(preference.getSharedPreferences().getString(
                                 PrefModel.KEY_MAC_ADDRESS, ""))){
-                            viewActivity.setBtnEnableSearchStart();
-                            viewActivity.setPbProgressNoVisibility();
                             try {
                                 listAdapter = new BluetoothConnectorController().getListAdapter(
                                         context, bluetoothConnector, BT_SEARCH);
                                 viewActivity.setListDevices(listAdapter);
-                                viewActivity.getProgressDialog().show();
-                                BluetoothConnector.ConnectedThread connectedThread =
-                                        new BluetoothConnectorController().connectToExisting(
-                                                bluetoothConnector, device);
-                                preference.saveMacAddress(device.getAddress());
-                                viewActivity.getProgressDialog().dismiss();
-                                viewActivity.showFrameLedControls();
-                                pulse = new Pulse(bluetoothConnector, connectedThread, preference,
-                                        viewActivity);
-                                pulse.startTimer();
-                                for (OnItemChangedListener l : listeners)
-                                    l.OnItemChanged();
-                            } catch (BluetoothException e) {
+                                asyncTaskConnect = new AsyncTaskConnect(device,viewActivity, preference,
+                                        bluetoothConnector, pulse, activity);
+                                asyncTaskConnect.execute();
+                            }catch (BluetoothException e){
                                 e.printStackTrace();
                                 new ViewController().viewWarning(activity, viewActivity,
                                         e.getMessage());
                             }
+
+//                            viewActivity.setBtnEnableSearchStart();
+//                            viewActivity.setPbProgressNoVisibility();
+//                            try {
+//                                listAdapter = new BluetoothConnectorController().getListAdapter(
+//                                        context, bluetoothConnector, BT_SEARCH);
+//                                viewActivity.setListDevices(listAdapter);
+//                                viewActivity.getProgressDialog().show();
+//                                BluetoothConnector.ConnectedThread connectedThread =
+//                                        new BluetoothConnectorController().connectToExisting(
+//                                                bluetoothConnector, device);
+//                                preference.saveMacAddress(device.getAddress());
+//                                viewActivity.getProgressDialog().dismiss();
+//                                viewActivity.showFrameLedControls();
+//                                pulse = new Pulse(bluetoothConnector, connectedThread, preference,
+//                                        viewActivity);
+//                                pulse.startTimer();
+//                                for (OnItemChangedListener l : listeners)
+//                                    l.OnItemChanged();
+//                            } catch (BluetoothException e) {
+//                                e.printStackTrace();
+//                                new ViewController().viewWarning(activity, viewActivity,
+//                                        e.getMessage());
+//                            }
                         }
                     }
                     break;

@@ -2,10 +2,13 @@ package by.bsuir.health.controller;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.Toast;
 
 import by.bsuir.health.MainActivity;
+import by.bsuir.health.R;
 import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
@@ -23,6 +26,15 @@ public class ViewController {
             public void run() {
                 viewActivity.getProgressDialog().dismiss();
                 Toast.makeText(activity, message,Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void vieLoading(final Activity activity, final ViewActivity viewActivity){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                viewActivity.getProgressDialog().show();
             }
         });
     }
@@ -59,5 +71,11 @@ public class ViewController {
             }
         });
         quitDialog.show();
+    }
+
+    public void setProgressDialog(Context context, ProgressDialog progressDialog){
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle(context.getString(R.string.connecting));
+        progressDialog.setMessage(context.getString(R.string.please_wait));
     }
 }

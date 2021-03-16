@@ -1,7 +1,6 @@
 package by.bsuir.health.ui;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.MovementMethod;
@@ -28,7 +27,6 @@ import by.bsuir.health.bean.ListFile;
  */
 public class ViewActivity extends AppCompatActivity {
 
-//    private IViewActivityResult iViewActivityResult;
     public static final int REQ_ENABLE_BT = 10;
     public static final int BT_BOUNDED = 21;
     public static final int BT_SEARCH = 22;
@@ -58,9 +56,11 @@ public class ViewActivity extends AppCompatActivity {
     private final String operatingModeSpo;
     private final int icBluetoothBoundedDevice;
     private final int icBluetoothSearchDevice;
+//    private final Context context;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
         appCompatActivity.setContentView(R.layout.activity_main);
+//        context             = appCompatActivity;
         frameMessage        = appCompatActivity.findViewById(R.id.frame_message);
         frameControls       = appCompatActivity.findViewById(R.id.frame_control);
         frameStorage        = appCompatActivity.findViewById(R.id.frame_storage);
@@ -85,6 +85,8 @@ public class ViewActivity extends AppCompatActivity {
         seriesSpo           = new LineGraphSeries();
         icBluetoothBoundedDevice = R.drawable.ic_bluetooth_bounded_device;
         icBluetoothSearchDevice = R.drawable.ic_bluetooth_search_device;
+        progressDialog = new ProgressDialog(appCompatActivity);
+
     }
 
     public void showFrameMessage() {
@@ -127,15 +129,16 @@ public class ViewActivity extends AppCompatActivity {
 
     }
 
+//    public Context getContext() {
+//        return context;
+//    }
+
     public GraphView getGvGraph() {
         return gvGraph;
     }
 
-    public void setProgressDialog(Context context) {
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setCancelable(false);
-        progressDialog.setTitle(context.getString(R.string.connecting));
-        progressDialog.setMessage(context.getString(R.string.please_wait));
+    public void setProgressDialog(ProgressDialog progressDialog) {
+        this.progressDialog = progressDialog;
     }
 
     public ProgressDialog getProgressDialog() {
