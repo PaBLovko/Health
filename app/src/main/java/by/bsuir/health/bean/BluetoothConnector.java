@@ -34,7 +34,7 @@ public class BluetoothConnector {
     }
 
     public synchronized void connect(BluetoothDevice device) throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
         if (isConnected())
             return;
@@ -140,17 +140,15 @@ public class BluetoothConnector {
     public boolean isConnected() {
         return socket != null;
     }
-    /***************************************************************
-     * 	Static methods
-     ***************************************************************/
+
     /**
      * get pared devices
      * @return devices
-     * @throws BluetoothException
+     * @throw BluetoothException
      */
     public static ArrayList<BluetoothDevice> getBondedDevices()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
 
         Set<BluetoothDevice> deviceSet = mBluetoothAdapter.getBondedDevices();
@@ -165,7 +163,7 @@ public class BluetoothConnector {
      */
     public static void cancelDiscovery()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
 
         if (getBluetoothAdapter().isDiscovering()) {
@@ -175,11 +173,11 @@ public class BluetoothConnector {
     /**
      * Start discovery
      * @return value
-     * @throws BluetoothException
+     * @throw BluetoothException
      */
     public static boolean startDiscovery()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
 
         if (getBluetoothAdapter().isDiscovering()) {
@@ -192,7 +190,7 @@ public class BluetoothConnector {
      */
     public static void enableSearch()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
         if (getBluetoothAdapter().isDiscovering()) {
             getBluetoothAdapter().cancelDiscovery();
@@ -204,11 +202,11 @@ public class BluetoothConnector {
     /**
      * Get Adapter name
      * @return name
-     * @throws BluetoothException
+     * @throw BluetoothException
      */
     public static String getAdapterName()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
         return getBluetoothAdapter().getName();
     }
@@ -216,19 +214,17 @@ public class BluetoothConnector {
      * Is bluetooth supported
      * @return support state
      */
-    public static boolean isSupported() {
-        if (getBluetoothAdapter() == null)
-            return false;
-        return true;
+    public static boolean isNotSupported() {
+        return getBluetoothAdapter() == null;
     }
     /**
      * Is bluetooth enabled
      * @return enable state
-     * @throws BluetoothException
+     * @throw BluetoothException
      */
     public static boolean isEnabled()
             throws BluetoothException {
-        if (!isSupported())
+        if (isNotSupported())
             throw new NotSupportedBluetoothException();
         return getBluetoothAdapter().isEnabled();
     }

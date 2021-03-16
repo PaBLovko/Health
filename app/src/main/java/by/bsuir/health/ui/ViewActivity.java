@@ -56,11 +56,10 @@ public class ViewActivity extends AppCompatActivity {
     private final String operatingModeSpo;
     private final int icBluetoothBoundedDevice;
     private final int icBluetoothSearchDevice;
-//    private final Context context;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
         appCompatActivity.setContentView(R.layout.activity_main);
-//        context             = appCompatActivity;
+        progressDialog      = new ProgressDialog(appCompatActivity);
         frameMessage        = appCompatActivity.findViewById(R.id.frame_message);
         frameControls       = appCompatActivity.findViewById(R.id.frame_control);
         frameStorage        = appCompatActivity.findViewById(R.id.frame_storage);
@@ -85,8 +84,6 @@ public class ViewActivity extends AppCompatActivity {
         seriesSpo           = new LineGraphSeries();
         icBluetoothBoundedDevice = R.drawable.ic_bluetooth_bounded_device;
         icBluetoothSearchDevice = R.drawable.ic_bluetooth_search_device;
-        progressDialog = new ProgressDialog(appCompatActivity);
-
     }
 
     public void showFrameMessage() {
@@ -123,15 +120,12 @@ public class ViewActivity extends AppCompatActivity {
         this.seriesSpo.setColor(Color.BLUE);
         this.gvGraph.addSeries(seriesPulse);
         this.gvGraph.addSeries(seriesCardio);
+        this.gvGraph.addSeries(seriesSpo);
         this.gvGraph.getViewport().setMinX(0);
         this.gvGraph.getViewport().setMaxX(MaxX);
         this.gvGraph.getViewport().setXAxisBoundsManual(true);
 
     }
-
-//    public Context getContext() {
-//        return context;
-//    }
 
     public GraphView getGvGraph() {
         return gvGraph;
@@ -260,9 +254,14 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     public void clearSeries(int maxX){
-        seriesPulse = new LineGraphSeries();
-        seriesCardio = new LineGraphSeries();
-        seriesSpo = new LineGraphSeries();
+        seriesPulse.clearCursorModeCache();
+        seriesPulse.clearReference(gvGraph);
+        seriesCardio.clearCursorModeCache();
+        seriesCardio.clearReference(gvGraph);
+        seriesSpo.clearCursorModeCache();
+        seriesSpo.clearReference(gvGraph);
+        gvGraph.clearAnimation();
+        gvGraph.clearFocus();
         setGvGraph(maxX);
     }
 }

@@ -1,7 +1,6 @@
 package by.bsuir.health;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -14,9 +13,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
-import by.bsuir.health.bean.AsyncTaskConnect;
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.bean.ListAdapter;
 import by.bsuir.health.bean.Pulse;
@@ -34,6 +31,7 @@ import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
 import by.bsuir.health.service.OnItemChangedListener;
+import by.bsuir.health.service.OnSwitchChangedListener;
 import by.bsuir.health.service.ReceiverService;
 import by.bsuir.health.ui.ViewActivity;
 import by.bsuir.health.util.CheckPermissionUtil;
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private String[] permissions;
 
     private BluetoothConnector bluetoothConnector;
-    private BluetoothConnector.ConnectedThread connectedThread;
 
     private ViewActivity viewActivity;
 
@@ -99,15 +96,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        PrefModel.addDelayListener(new OnDelayChangedListener() {
-            @Override
-            public void OnDelayChanged() throws BluetoothException, IOException {
-                if (connectedThread.isConnected())
-                    connectedThread.write((preference.getDelayTimer() + "Delay#").getBytes());
-            }
-        });
-
-//        addPermissions();
         permissions = new SdFileController().addPermissions();
         checkPermissionUtil = CheckPermissionUtil.getInstance();
         checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
@@ -115,65 +103,39 @@ public class MainActivity extends AppCompatActivity {
         if (Storage.cardAvailable()) storageDirectory =
                 Environment.getExternalStorageDirectory().toString() + DIR_SD;
 
-//        imageview = (ImageView) findViewById();
+        pulse = new Pulse(bluetoothConnector, viewActivity, preference);
 
-        checkedChangeService = new CheckedChangeService(viewActivity, this,
-                bluetoothConnector, connectedThread);
-        itemClickService = new ItemClickService(viewActivity,sdFiles, pulse, preference,
+        checkedChangeService = new CheckedChangeService(viewActivity, this);
+
+        itemClickService = new ItemClickService(viewActivity,sdFiles, pulse,
                 this, bluetoothConnector);
+
         clickService = new ClickService(viewActivity,pulse,this, sdFiles, storageDirectory);
-        receiverService = new ReceiverService(viewActivity, bluetoothConnector, preference, listAdapter,
+
+        receiverService = new ReceiverService(viewActivity, bluetoothConnector, listAdapter,
                 this, pulse);
+
         new BluetoothConnectorController().addReceiver(this, receiverService);
 
-//        ItemClickService.addItemListener(new OnItemChangedListener() {
-//            @Override
-//            public void OnItemChanged() {
-//                if (pulse == null) {
-//                    try {
-//                        pulse = itemClickService.getAsyncTaskConnect().get();
-//                    } catch (ExecutionException e) {
-//                        e.printStackTrace();
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-////                    pulse = itemClickService.getPulse();
-//                    updateDataFoConnect();
-//                    receiverService.setPulse(pulse);
-//                }
-//            }
-//        });
-//
-//        ReceiverService.addItemListener(new OnItemChangedListener() {
-//            @Override
-//            public void OnItemChanged() {
-//                if (pulse == null) {
-//                    pulse = receiverService.getPulse();
-//                    updateDataFoConnect();
-//                    itemClickService.setPulse(pulse);
-//                }
-//            }
-//        });
-
-        AsyncTaskConnect.addItemListener(new OnItemChangedListener() {
+        PrefModel.addDelayListener(new OnDelayChangedListener() {
             @Override
-            public void OnItemChanged() {
-                if (pulse == null){
-                    try {
-                        if (itemClickService.getAsyncTaskConnect() != null){
-                            pulse = itemClickService.getAsyncTaskConnect().get();
-                            updateDataFoConnect();
-                            receiverService.setPulse(pulse);
-                        }else{
-                            pulse = receiverService.getAsyncTaskConnect().get();
-                            updateDataFoConnect();
-                            itemClickService.setPulse(pulse);
-                        }
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            public void OnDelayChanged() throws BluetoothException, IOException {
+                if (pulse.getConnectedThread().isConnected())
+                    pulse.getConnectedThread().write(
+                            (preference.getDelayTimer() + "Delay#").getBytes());
+            }
+        });
+
+        CheckedChangeService.addItemListener(new OnSwitchChangedListener() {
+            @Override
+            public void OnSwitchChanged(String command) {
+                try {
+                    if (pulse.getBluetoothConnector().isConnected() && command != null)
+                        pulse.getConnectedThread().write(command.getBytes());
+                } catch (BluetoothException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -186,31 +148,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        new ViewController().setListeners(viewActivity, checkedChangeService, itemClickService, clickService);
+        new ViewController().setListeners(
+                viewActivity, checkedChangeService, itemClickService, clickService);
     }
-
-    private void updateDataFoConnect(){
-        bluetoothConnector = pulse.getBluetoothConnector();
-        connectedThread = pulse.getConnectedThread();
-        checkedChangeService.setConnectedThread(connectedThread);
-        checkedChangeService.setBluetoothConnector(bluetoothConnector);
-        clickService.setPulse(pulse);
-    }
-//
-//    private void addPermissions() {
-//        permissions = new String[]{
-//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                Manifest.permission.READ_EXTERNAL_STORAGE,
-//                Manifest.permission.ACCESS_FINE_LOCATION,
-//                Manifest.permission.ACCESS_COARSE_LOCATION
-//        };
-//    }
 
     CheckPermissionUtil.IPermissionsResult permissionsResult =
             new CheckPermissionUtil.IPermissionsResult() {
                 @Override
                 public void passPermissions() {
-                    Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Welcome",
+                            Toast.LENGTH_SHORT).show();
                 }
                 @Override
                 public void forbidPermissions() {
@@ -263,27 +210,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showImage(Bitmap bitmap){
-        //TODO showImageFullScreen
-//        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-//        DisplayMetrics displayMetrics = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//
-//        int w = displayMetrics.widthPixels;
-//        int h = displayMetrics.heightPixels;
-//
-//        try{
-//            if (bitmap != null){
-//                //toast
-//                wallpaperManager.setBitmap(bitmap);
-//                wallpaperManager.suggestDesiredDimensions(w, h);
-//            }else { Log.i("clipcodes", "Bitmap Null");}
-//        }catch (Exception e){
-//            Log.i("clipcodes", "Can't ser wallpaper");
-//        }
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == REQ_ENABLE_BT) {
@@ -303,7 +229,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         new ViewController().openQuitDialog(this);
     }
 

@@ -19,7 +19,6 @@ import by.bsuir.health.ui.ViewActivity;
  */
 public class Pulse {
 
-    private String lastSensorValues;
     private Handler handler;
     private Runnable timer;
     private int xLastValue;
@@ -27,20 +26,50 @@ public class Pulse {
     private BluetoothConnector.ConnectedThread connectedThread;
     private PrefModel preference;
     private ViewActivity viewActivity;
-    private MovementMethod movementMethod;
-    private Map dataSensor;
 
-    public Pulse(BluetoothConnector bluetoothConnector,
-                 BluetoothConnector.ConnectedThread connectedThread,
-                 PrefModel preference, ViewActivity viewActivity) {
+    public Pulse(BluetoothConnector bluetoothConnector, ViewActivity viewActivity,
+                 PrefModel preference) {
         this.xLastValue = 0;
         this.bluetoothConnector = bluetoothConnector;
-        this.connectedThread = connectedThread;
-        this.lastSensorValues = connectedThread.getLastSensorValues();
+        this.connectedThread = null;
         this.preference = preference;
         this.viewActivity = viewActivity;
-        this.movementMethod = new ScrollingMovementMethod();
         this.handler = new Handler(Looper.getMainLooper());
+    }
+
+//    public Pulse(BluetoothConnector bluetoothConnector,
+//                 BluetoothConnector.ConnectedThread connectedThread,
+//                 PrefModel preference, ViewActivity viewActivity) {
+//        this.xLastValue = 0;
+//        this.bluetoothConnector = bluetoothConnector;
+//        this.connectedThread = connectedThread;
+//        this.preference = preference;
+//        this.viewActivity = viewActivity;
+//        this.handler = new Handler(Looper.getMainLooper());
+//    }
+
+    public void setBluetoothConnector(BluetoothConnector bluetoothConnector) {
+        this.bluetoothConnector = bluetoothConnector;
+    }
+
+    public void setConnectedThread(BluetoothConnector.ConnectedThread connectedThread) {
+        this.connectedThread = connectedThread;
+    }
+
+    public PrefModel getPreference() {
+        return preference;
+    }
+
+    public void setPreference(PrefModel preference) {
+        this.preference = preference;
+    }
+
+    public ViewActivity getViewActivity() {
+        return viewActivity;
+    }
+
+    public void setViewActivity(ViewActivity viewActivity) {
+        this.viewActivity = viewActivity;
     }
 
     public BluetoothConnector getBluetoothConnector() {
@@ -57,14 +86,14 @@ public class Pulse {
             @Override
             public void run() {
                 if (connectedThread.getLastSensorValues() != null) {
-                    lastSensorValues = connectedThread.getLastSensorValues();
+                    String lastSensorValues = connectedThread.getLastSensorValues();
+                    MovementMethod movementMethod = new ScrollingMovementMethod();
                     viewActivity.setEtConsoleAndMovementMethod(lastSensorValues, movementMethod);
-                    dataSensor = parseData(lastSensorValues);
+                    Map dataSensor = parseData(lastSensorValues);
                     if (dataSensor != null){
                         if (dataSensor.containsKey("Temp") && dataSensor.containsKey("rand")) {
                             int pulseValue = Integer.parseInt(dataSensor.get("Temp").toString());
                             int rand = Integer.parseInt(dataSensor.get("rand").toString().trim());
-                            //TODO cardio
                             if (preference.getOperationMode().equals(
                                     viewActivity.getOperatingModePulse())) {
                                 viewActivity.getSeriesPulse().appendData(
@@ -82,7 +111,7 @@ public class Pulse {
                                         true, preference.getPointsCount());
                             }
                             xLastValue++;
-                            //                        Toast.makeText(MainActivity.this, "Millis: " + dataSensor.get("millis"), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(MainActivity.this, "Millis: " + dataSensor.get("millis"), Toast.LENGTH_SHORT).show();
                         }
 //                        xLastValue++;
                     }

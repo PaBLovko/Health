@@ -3,12 +3,11 @@ package by.bsuir.health.service;
 import android.support.v4.app.FragmentActivity;
 import android.widget.CompoundButton;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.controller.BluetoothConnectorController;
 import by.bsuir.health.controller.CheckedChangeController;
-import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.ui.ViewActivity;
 
 /**
@@ -19,28 +18,18 @@ public class CheckedChangeService implements CompoundButton.OnCheckedChangeListe
 
     public static final int BUZZER = 30;
     public static final int LED = 31;
+    private static final List<OnSwitchChangedListener> listeners = new ArrayList<>();
 
     private final ViewActivity viewActivity;
     private final FragmentActivity fragmentActivity;
-    private BluetoothConnector bluetoothConnector;
-    private BluetoothConnector.ConnectedThread connectedThread;
 
-
-    public CheckedChangeService(ViewActivity viewActivity, FragmentActivity fragmentActivity,
-                                BluetoothConnector bluetoothConnector,
-                                BluetoothConnector.ConnectedThread connectedThread) {
+    public CheckedChangeService(ViewActivity viewActivity, FragmentActivity fragmentActivity) {
         this.viewActivity = viewActivity;
         this.fragmentActivity = fragmentActivity;
-        this.bluetoothConnector = bluetoothConnector;
-        this.connectedThread = connectedThread;
     }
 
-    public void setBluetoothConnector(BluetoothConnector bluetoothConnector) {
-        this.bluetoothConnector = bluetoothConnector;
-    }
-
-    public void setConnectedThread(BluetoothConnector.ConnectedThread connectedThread) {
-        this.connectedThread = connectedThread;
+    public static void addItemListener(OnSwitchChangedListener l) {
+        listeners.add(l);
     }
 
     @Override
@@ -49,24 +38,14 @@ public class CheckedChangeService implements CompoundButton.OnCheckedChangeListe
             new BluetoothConnectorController().enableBt(fragmentActivity, isChecked);
             if (!isChecked) viewActivity.showFrameMessage();
         } else if (buttonView.equals(viewActivity.getSwitchBuzzer())) {
-            try {
-                new CheckedChangeController().enableCheckBox(bluetoothConnector, connectedThread,
-                        BUZZER, isChecked);
-            } catch (BluetoothException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            String command = new CheckedChangeController().enableCheckBox(BUZZER, isChecked);
+            for (OnSwitchChangedListener l : listeners)
+                l.OnSwitchChanged(command);
         }
         else if (buttonView.equals(viewActivity.getSwitchLed())) {
-            try {
-                new CheckedChangeController().enableCheckBox(bluetoothConnector, connectedThread,
-                        LED, isChecked);
-            } catch (BluetoothException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            String command = new CheckedChangeController().enableCheckBox(LED, isChecked);
+            for (OnSwitchChangedListener l : listeners)
+                l.OnSwitchChanged(command);
         }
     }
 }

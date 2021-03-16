@@ -1,10 +1,5 @@
 package by.bsuir.health.controller;
 
-import java.io.IOException;
-
-import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.exeption.bluetooth.BluetoothException;
-
 import static by.bsuir.health.service.CheckedChangeService.BUZZER;
 import static by.bsuir.health.service.CheckedChangeService.LED;
 
@@ -14,11 +9,9 @@ import static by.bsuir.health.service.CheckedChangeService.LED;
  */
 public class CheckedChangeController {
 
-    public void enableCheckBox(BluetoothConnector bluetoothConnector,
-                               BluetoothConnector.ConnectedThread connectedThread,
-                               int box, boolean state) throws BluetoothException, IOException {
-        if (bluetoothConnector.isConnected()) {
-            String command = "";
+    public String enableCheckBox(int box, boolean state){
+        String command = null;
+//        if (bluetoothConnector.isConnected()) {
             switch (box) {
                 case BUZZER:
                     command = (state) ? "buzzer on#" : "buzzer off#";
@@ -27,7 +20,8 @@ public class CheckedChangeController {
                     command = (state) ? "led on#" : "led off#";
                     break;
             }
-            connectedThread.write(command.getBytes());
-        }
+//            connectedThread.write(command.getBytes());
+//        }
+        return command;
     }
 }

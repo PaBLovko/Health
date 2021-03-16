@@ -7,3 +7,4 @@ package by.bsuir.health.service;
 public interface OnItemChangedListener {
     void OnItemChanged();
 }
+

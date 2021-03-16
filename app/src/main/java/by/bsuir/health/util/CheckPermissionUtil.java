@@ -34,23 +34,24 @@ public class CheckPermissionUtil {
         return CheckPermissionInstance.mInstance;
     }
 
-    public void checkPermissions(Activity context, String[] permissions, IPermissionsResult permissionsResult) {
+    public void checkPermissions(Activity context, String[] permissions,
+                                 IPermissionsResult permissionsResult) {
         mPermissionsResult = permissionsResult;
+
         if (Build.VERSION.SDK_INT < 23) {
             permissionsResult.passPermissions();
             return;
         }
+
         List<String> mPermissionList = new ArrayList<>();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+        for (String permission : permissions)
+            if (ContextCompat.checkSelfPermission(context, permission) !=
+                    PackageManager.PERMISSION_GRANTED)
                 mPermissionList.add(permission);
-            }
-        }
-        if (mPermissionList.size() > 0) {
+
+        if (mPermissionList.size() > 0)
             ActivityCompat.requestPermissions(context, permissions, mRequestCode);
-        } else {
-            permissionsResult.passPermissions();
-        }
+        else permissionsResult.passPermissions();
     }
 
     public void onRequestPermissionsResult(int requestCode, int[] grantResults) {
