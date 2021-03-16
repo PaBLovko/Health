@@ -4,20 +4,15 @@ import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import by.bsuir.health.controller.BluetoothConnectorController;
 import by.bsuir.health.controller.ViewController;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
-import by.bsuir.health.service.OnConnectChangedListener;
 import by.bsuir.health.ui.ViewActivity;
 /**
  * @author Pablo on 15.03.2021
  * @project Health
  */
 public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.ConnectedThread> {
-    private static final List<OnConnectChangedListener> listeners = new ArrayList<>();
     private BluetoothDevice device;
     private ViewActivity viewActivity;
     private BluetoothConnector bluetoothConnector;
@@ -31,10 +26,6 @@ public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.C
         this.bluetoothConnector = bluetoothConnector;
         this.pulse = pulse;
         this.activity = activity;
-    }
-
-    public static void addItemListener(OnConnectChangedListener l) {
-        listeners.add(l);
     }
 
     @Override
@@ -73,7 +64,5 @@ public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.C
         super.onPostExecute(connectedThread);
         viewActivity.getProgressDialog().dismiss();
         viewActivity.showFrameLedControls();
-        for (OnConnectChangedListener l : listeners)
-            l.OnConnectChanged(connectedThread);
     }
 }

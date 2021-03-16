@@ -23,6 +23,7 @@ public class CheckedChangeService implements CompoundButton.OnCheckedChangeListe
     private final ViewActivity viewActivity;
     private final FragmentActivity fragmentActivity;
 
+
     public CheckedChangeService(ViewActivity viewActivity, FragmentActivity fragmentActivity) {
         this.viewActivity = viewActivity;
         this.fragmentActivity = fragmentActivity;

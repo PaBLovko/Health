@@ -45,7 +45,8 @@ public class ItemClickService implements AdapterView.OnItemClickListener {
         if (parent.equals(viewActivity.getListDevices())) {
             BluetoothDevice device = bluetoothConnector.getBluetoothDevices().get(position);
             if (device != null) {
-                asyncTaskConnect = new AsyncTaskConnect(device, viewActivity, bluetoothConnector, pulse, activity);
+                asyncTaskConnect = new AsyncTaskConnect(device, viewActivity, bluetoothConnector,
+                        pulse, activity);
                 asyncTaskConnect.execute();
             }
         }

@@ -37,17 +37,6 @@ public class Pulse {
         this.handler = new Handler(Looper.getMainLooper());
     }
 
-//    public Pulse(BluetoothConnector bluetoothConnector,
-//                 BluetoothConnector.ConnectedThread connectedThread,
-//                 PrefModel preference, ViewActivity viewActivity) {
-//        this.xLastValue = 0;
-//        this.bluetoothConnector = bluetoothConnector;
-//        this.connectedThread = connectedThread;
-//        this.preference = preference;
-//        this.viewActivity = viewActivity;
-//        this.handler = new Handler(Looper.getMainLooper());
-//    }
-
     public void setBluetoothConnector(BluetoothConnector bluetoothConnector) {
         this.bluetoothConnector = bluetoothConnector;
     }

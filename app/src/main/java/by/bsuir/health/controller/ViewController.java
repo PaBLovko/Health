@@ -30,15 +30,6 @@ public class ViewController {
         });
     }
 
-    public void vieLoading(final Activity activity, final ViewActivity viewActivity){
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                viewActivity.getProgressDialog().show();
-            }
-        });
-    }
-
     public void setListeners(ViewActivity viewActivity, CheckedChangeService checkedChangeService,
                              ItemClickService itemClickService, ClickService clickService) {
         viewActivity.getSwitchEnableBt().setOnCheckedChangeListener(checkedChangeService);

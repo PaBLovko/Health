@@ -42,14 +42,6 @@ public class ReceiverService extends BroadcastReceiver {
         this.asyncTaskConnect = null;
     }
 
-    public void setPulse(Pulse pulse) {
-        this.pulse = pulse;
-    }
-
-    public AsyncTaskConnect getAsyncTaskConnect() {
-        return asyncTaskConnect;
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
