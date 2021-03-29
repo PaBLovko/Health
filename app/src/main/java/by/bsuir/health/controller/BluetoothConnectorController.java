@@ -10,7 +10,7 @@ import android.support.v4.app.FragmentActivity;
 
 import by.bsuir.health.R;
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.bean.ListAdapter;
+import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.exeption.bluetooth.ConnectionBluetoothException;
 import by.bsuir.health.service.ReceiverService;

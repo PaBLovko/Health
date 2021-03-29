@@ -9,7 +9,7 @@ import android.content.Intent;
 
 import by.bsuir.health.bean.AsyncTaskConnect;
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.bean.ListAdapter;
+import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.bean.Pulse;
 import by.bsuir.health.controller.BluetoothConnectorController;
 import by.bsuir.health.controller.ViewController;

@@ -1,5 +1,6 @@
-package by.bsuir.health.bean;
+package by.bsuir.health.ui;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,21 +18,23 @@ import by.bsuir.health.R;
  * @project Health
  */
 
-public class ListFile extends BaseAdapter {
+public class ListAdapter extends BaseAdapter {
 
     private static final int RESOURCE_LAYOUT = R.layout.list_item;
 
-    private final ArrayList<SdFile> sdFiles;
+    private final ArrayList<BluetoothDevice> bluetoothDevices;
     private final LayoutInflater inflater;
+    private final int iconType;
 
-    public ListFile(Context context, ArrayList<SdFile> sdFiles) {
-        this.sdFiles = sdFiles;
+    public ListAdapter(Context context, ArrayList<BluetoothDevice> bluetoothDevices, int iconType) {
+        this.bluetoothDevices = bluetoothDevices;
+        this.iconType = iconType;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount() {
-        return sdFiles.size();
+        return bluetoothDevices.size();
     }
 
     @Override
@@ -48,11 +51,11 @@ public class ListFile extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = inflater.inflate(RESOURCE_LAYOUT, parent, false);
 
-        SdFile file = sdFiles.get(position);
-        if (file != null) {
-            ((TextView) view.findViewById(R.id.tv_name)).setText(file.getName());
-            ((TextView) view.findViewById(R.id.tv_address)).setText(file.getDescription());
-            ((ImageView) view.findViewById(R.id.iv_icon)).setImageBitmap(file.getImage());
+        BluetoothDevice device = bluetoothDevices.get(position);
+        if (device != null) {
+            ((TextView) view.findViewById(R.id.tv_name)).setText(device.getName());
+            ((TextView) view.findViewById(R.id.tv_address)).setText(device.getAddress());
+            ((ImageView) view.findViewById(R.id.iv_icon)).setImageResource(iconType);
         }
         return view;
     }

@@ -36,7 +36,7 @@ public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.C
                     bluetoothConnector, device);
             pulse.getPreference().saveMacAddress(device.getAddress());
             pulse.setConnectedThread(connectedThread);
-            pulse.startTimer();
+//            pulse.startTimer();
         } catch (BluetoothException e) {
             e.printStackTrace();
             new ViewController().viewWarning(activity, viewActivity, e.getMessage());

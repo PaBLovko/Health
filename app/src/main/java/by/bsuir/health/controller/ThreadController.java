@@ -15,7 +15,7 @@ public class ThreadController {
             pulse.cancelTimer();
             if (pulse.getBluetoothConnector().isConnected())
                 pulse.getBluetoothConnector().disconnect();
-            if (pulse.getConnectedThread().isConnected())
+            if (pulse.getConnectedThread() != null && pulse.getConnectedThread().isConnected())
                 pulse.getConnectedThread().disconnect();
         }
     }

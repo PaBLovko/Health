@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.bean.ListFile;
+import by.bsuir.health.ui.ListFile;
 import by.bsuir.health.bean.SdFile;
 import by.bsuir.health.bean.Pulse;
 import by.bsuir.health.controller.SdFileController;
@@ -68,6 +68,8 @@ public class ClickService implements View.OnClickListener{
             viewActivity.showFrameControls();
         } else if (v.equals(viewActivity.getBtnStart())){
             //TODO START TIMER (1 MIN)
+            pulse.startTimer();
+            pulse.counter();
         } else if (v.equals(viewActivity.getBtnStorage())){
             try {
                 new ThreadController().disconnection(pulse);

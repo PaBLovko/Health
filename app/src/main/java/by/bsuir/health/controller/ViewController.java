@@ -30,6 +30,10 @@ public class ViewController {
         });
     }
 
+    public void viewToastShow(Activity activity, String text){
+        Toast.makeText(activity,"Mismatch of modes", Toast.LENGTH_SHORT).show();
+    }
+
     public void setListeners(ViewActivity viewActivity, CheckedChangeService checkedChangeService,
                              ItemClickService itemClickService, ClickService clickService) {
         viewActivity.getSwitchEnableBt().setOnCheckedChangeListener(checkedChangeService);

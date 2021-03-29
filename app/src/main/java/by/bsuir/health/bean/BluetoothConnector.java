@@ -44,7 +44,7 @@ public class BluetoothConnector {
             socket.connect();
         } catch (Exception e) {
             socket = null;
-            throw new ConnectionBluetoothException(e);
+            throw new ConnectionBluetoothException(NOT_CONNECTED);
         }
     }
 

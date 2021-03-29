@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.bean.ListAdapter;
 import by.bsuir.health.bean.Pulse;
 import by.bsuir.health.bean.SdFile;
 import by.bsuir.health.controller.BluetoothConnectorController;
@@ -33,6 +32,7 @@ import by.bsuir.health.service.ItemClickService;
 import by.bsuir.health.service.OnItemChangedListener;
 import by.bsuir.health.service.OnSwitchChangedListener;
 import by.bsuir.health.service.ReceiverService;
+import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.ui.ViewActivity;
 import by.bsuir.health.util.CheckPermissionUtil;
 
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         preference = new PrefModel(this);
         viewActivity = new ViewActivity(this);
-        viewActivity.setGvGraph(preference.getPointsCount());
+//        viewActivity.setGvGraph(preference.getPointsCount());
         new ViewController().setProgressDialog(this, viewActivity.getProgressDialog());
 
         sdFiles = new ArrayList<>();
@@ -194,9 +194,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (pulse != null)
-            if (pulse.getBluetoothConnector().isConnected())
-                pulse.startTimer();
     }
 
     @Override

@@ -1,7 +1,7 @@
 package by.bsuir.health.ui;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.MovementMethod;
 import android.view.View;
@@ -15,17 +15,14 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 import by.bsuir.health.R;
-import by.bsuir.health.bean.ListAdapter;
-import by.bsuir.health.bean.ListFile;
 
 /**
  * @author Pablo on 30.01.2021
  * @project Health
  */
-public class ViewActivity extends AppCompatActivity {
+public class ViewActivity {
 
     public static final int REQ_ENABLE_BT = 10;
     public static final int BT_BOUNDED = 21;
@@ -47,15 +44,14 @@ public class ViewActivity extends AppCompatActivity {
     private final ProgressBar pbProgress;
     private final ListView listDevices;
     private final GraphView gvGraph;
-    private LineGraphSeries seriesPulse;
-    private LineGraphSeries seriesCardio;
-    private LineGraphSeries seriesSpo;
+//    private LineGraphSeries<DataPoint> series;
     private ProgressDialog progressDialog;
     private final String operatingModePulse;
     private final String operatingModeCardio;
     private final String operatingModeSpo;
     private final int icBluetoothBoundedDevice;
     private final int icBluetoothSearchDevice;
+    private final Activity activity;
 
     public ViewActivity(AppCompatActivity appCompatActivity) {
         appCompatActivity.setContentView(R.layout.activity_main);
@@ -79,11 +75,10 @@ public class ViewActivity extends AppCompatActivity {
         operatingModePulse  = appCompatActivity.getString(R.string.operating_mode_pulse);
         operatingModeCardio = appCompatActivity.getString(R.string.operating_mode_cardio);
         operatingModeSpo    = appCompatActivity.getString(R.string.operating_mode_spo);
-        seriesPulse         = new LineGraphSeries();
-        seriesCardio        = new LineGraphSeries();
-        seriesSpo           = new LineGraphSeries();
+//        series              = new LineGraphSeries<>();
         icBluetoothBoundedDevice = R.drawable.ic_bluetooth_bounded_device;
         icBluetoothSearchDevice = R.drawable.ic_bluetooth_search_device;
+        activity = appCompatActivity;
     }
 
     public void showFrameMessage() {
@@ -114,18 +109,18 @@ public class ViewActivity extends AppCompatActivity {
         frameStorage.setVisibility(View.VISIBLE);
     }
 
-    public void setGvGraph(int MaxX) {
-        this.seriesPulse.setColor(Color.GREEN);
-        this.seriesCardio.setColor(Color.RED);
-        this.seriesSpo.setColor(Color.BLUE);
-        this.gvGraph.addSeries(seriesPulse);
-        this.gvGraph.addSeries(seriesCardio);
-        this.gvGraph.addSeries(seriesSpo);
-        this.gvGraph.getViewport().setMinX(0);
-        this.gvGraph.getViewport().setMaxX(MaxX);
-        this.gvGraph.getViewport().setXAxisBoundsManual(true);
-
+    public Activity getActivity() {
+        return activity;
     }
+
+    //    public void setGvGraph(int MaxX) {
+//        this.series.setColor(Color.RED);
+//        this.gvGraph.addSeries(series);
+//        this.gvGraph.getViewport().setMinX(0);
+//        this.gvGraph.getViewport().setMaxX(MaxX);
+//        this.gvGraph.getViewport().setXAxisBoundsManual(true);
+//
+//    }
 
     public GraphView getGvGraph() {
         return gvGraph;
@@ -212,26 +207,13 @@ public class ViewActivity extends AppCompatActivity {
         this.etConsole.setMovementMethod(movementMethod);
     }
 
-    public LineGraphSeries getSeriesSpo() {
-        return seriesSpo;
-    }
+//    public LineGraphSeries<DataPoint> getSeries() {
+//        return series;
+//    }
 
-    public LineGraphSeries getSeriesPulse() {
-        return seriesPulse;
-    }
-
-    public LineGraphSeries getSeriesCardio() {
-        return seriesCardio;
-    }
-
-
-    public void setSeriesPulse(LineGraphSeries seriesPulse) {
-        this.seriesPulse = seriesPulse;
-    }
-
-    public void setSeriesCardio(LineGraphSeries seriesCardio) {
-        this.seriesCardio = seriesCardio;
-    }
+//    public void setSeriesPulse(LineGraphSeries<DataPoint> series) {
+//        this.series = series;
+//    }
 
     public String getOperatingModePulse() {
         return operatingModePulse;
@@ -253,16 +235,16 @@ public class ViewActivity extends AppCompatActivity {
         return icBluetoothSearchDevice;
     }
 
-    public void clearSeries(int maxX){
-        seriesPulse.clearCursorModeCache();
-        seriesPulse.clearReference(gvGraph);
-        seriesCardio.clearCursorModeCache();
-        seriesCardio.clearReference(gvGraph);
-        seriesSpo.clearCursorModeCache();
-        seriesSpo.clearReference(gvGraph);
-        gvGraph.clearAnimation();
-        gvGraph.clearFocus();
-        setGvGraph(maxX);
-    }
+//    public void clearSeries(int maxX){
+////        seriesPulse.clearCursorModeCache();
+////        seriesPulse.clearReference(gvGraph);
+////        seriesCardio.clearCursorModeCache();
+////        seriesCardio.clearReference(gvGraph);
+////        seriesSpo.clearCursorModeCache();
+////        seriesSpo.clearReference(gvGraph);
+////        gvGraph.clearAnimation();
+////        gvGraph.clearFocus();
+//        setGvGraph(maxX);
+//    }
 }
 

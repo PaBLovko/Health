@@ -20,6 +20,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        android:name="com.orm.SugarApp"> <!--Используйте этот атрибут дословно-->
+
+        <meta-data android:name="DATABASE" android:value="sugar_example.db"/>
+        <meta-data android:name="VERSION" android:value="1"/>
+        <meta-data android:name="QUERY_LOG" android:value="true"/>
+        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.example"/>
         <activity
             
             android:name="by.bsuir.health.MainActivity"

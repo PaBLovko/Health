@@ -1,6 +1,5 @@
-package by.bsuir.health.bean;
+package by.bsuir.health.ui;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,29 +11,28 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import by.bsuir.health.R;
+import by.bsuir.health.bean.SdFile;
 
 /**
  * @author Pablo on 10.12.2020
  * @project Health
  */
 
-public class ListAdapter extends BaseAdapter {
+public class ListFile extends BaseAdapter {
 
     private static final int RESOURCE_LAYOUT = R.layout.list_item;
 
-    private final ArrayList<BluetoothDevice> bluetoothDevices;
+    private final ArrayList<SdFile> sdFiles;
     private final LayoutInflater inflater;
-    private final int iconType;
 
-    public ListAdapter(Context context, ArrayList<BluetoothDevice> bluetoothDevices, int iconType) {
-        this.bluetoothDevices = bluetoothDevices;
-        this.iconType = iconType;
+    public ListFile(Context context, ArrayList<SdFile> sdFiles) {
+        this.sdFiles = sdFiles;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount() {
-        return bluetoothDevices.size();
+        return sdFiles.size();
     }
 
     @Override
@@ -51,11 +49,11 @@ public class ListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = inflater.inflate(RESOURCE_LAYOUT, parent, false);
 
-        BluetoothDevice device = bluetoothDevices.get(position);
-        if (device != null) {
-            ((TextView) view.findViewById(R.id.tv_name)).setText(device.getName());
-            ((TextView) view.findViewById(R.id.tv_address)).setText(device.getAddress());
-            ((ImageView) view.findViewById(R.id.iv_icon)).setImageResource(iconType);
+        SdFile file = sdFiles.get(position);
+        if (file != null) {
+            ((TextView) view.findViewById(R.id.tv_name)).setText(file.getName());
+            ((TextView) view.findViewById(R.id.tv_address)).setText(file.getDescription());
+            ((ImageView) view.findViewById(R.id.iv_icon)).setImageBitmap(file.getImage());
         }
         return view;
     }
