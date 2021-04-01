@@ -3,8 +3,6 @@ package by.bsuir.health.bean;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import javax.inject.Inject;
-
 /**
  * @author Pablo on 24.03.2021
  * @project Health
@@ -16,13 +14,19 @@ public class SignalAnalysis {
     private int numOfExtrasystoleInRow;
     private int pulse;
 
-    @Inject
-    public SignalAnalysis(){}
+//    @Inject
+//    public SignalAnalysis(){}
 
-    public void setDataECG(ArrayList<Integer> ecgData){
+    public SignalAnalysis(ArrayList<Integer> ecgData){
         this.ecgData = ecgData;
-        listOfIndex = new ArrayList<>();
+        this.listOfIndex = new ArrayList<>();
     }
+
+//    public void setDataECG(ArrayList<Integer> ecgData){
+//        this.ecgData = ecgData;
+//        listOfIndex = new ArrayList<>();
+//    }
+
     public int getPulse(){
         return pulse;
     }

@@ -9,12 +9,11 @@ import android.content.Intent;
 
 import by.bsuir.health.bean.AsyncTaskConnect;
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.bean.Pulse;
-import by.bsuir.health.controller.BluetoothConnectorController;
 import by.bsuir.health.controller.ViewController;
 import by.bsuir.health.dao.preference.PrefModel;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
+import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.ui.ViewActivity;
 
 import static by.bsuir.health.ui.ViewActivity.BT_SEARCH;
@@ -51,7 +50,7 @@ public class ReceiverService extends BroadcastReceiver {
                     try {
                         viewActivity.setBtnEnableSearchStop();
                         viewActivity.setPbProgressVisibility();
-                        listAdapter = new BluetoothConnectorController().getListAdapter(
+                        listAdapter = new ViewController().getListAdapter(
                                 context, bluetoothConnector, BT_SEARCH);
                         viewActivity.setListDevices(listAdapter);
                     } catch (BluetoothException e) {
@@ -75,7 +74,7 @@ public class ReceiverService extends BroadcastReceiver {
                         if(device.getAddress().equals(preference.getSharedPreferences().getString(
                                 PrefModel.KEY_MAC_ADDRESS, ""))){
                             try {
-                                listAdapter = new BluetoothConnectorController().getListAdapter(
+                                listAdapter = new ViewController().getListAdapter(
                                         context, bluetoothConnector, BT_SEARCH);
                                 viewActivity.setListDevices(listAdapter);
                                 asyncTaskConnect = new AsyncTaskConnect(device,viewActivity,

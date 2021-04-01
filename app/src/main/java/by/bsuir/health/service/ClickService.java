@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.ui.ListFile;
-import by.bsuir.health.bean.SdFile;
 import by.bsuir.health.bean.Pulse;
-import by.bsuir.health.controller.SdFileController;
 import by.bsuir.health.controller.ThreadController;
+import by.bsuir.health.controller.ViewController;
+import by.bsuir.health.dao.DatabaseHelper;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
+import by.bsuir.health.ui.ListDimensions;
 import by.bsuir.health.ui.ViewActivity;
 
 /**
@@ -26,15 +26,15 @@ public class ClickService implements View.OnClickListener{
 
     private ViewActivity viewActivity;
     private Pulse pulse;
-    private ArrayList<SdFile> sdFiles;
+//    private ArrayList<SdFile> sdFiles;
     private String storageDirectory;
     private Context context;
 
     public ClickService(ViewActivity viewActivity, Pulse pulse, Context context,
-                        ArrayList<SdFile> sdFiles, String storageDirectory) {
+                        String storageDirectory) {
         this.viewActivity = viewActivity;
         this.pulse = pulse;
-        this.sdFiles = sdFiles;
+//        this.sdFiles = sdFiles;
         this.storageDirectory = storageDirectory;
         this.context = context;
     }
@@ -43,9 +43,9 @@ public class ClickService implements View.OnClickListener{
         this.pulse = pulse;
     }
 
-    public ArrayList<SdFile> getSdFiles() {
-        return sdFiles;
-    }
+//    public ArrayList<SdFile> getSdFiles() {
+//        return sdFiles;
+//    }
 
     public static void addItemListener(OnItemChangedListener l) {
         listeners.add(l);
@@ -76,8 +76,9 @@ public class ClickService implements View.OnClickListener{
             } catch (BluetoothException | IOException e) {
                 e.printStackTrace();
             }
-            sdFiles = new SdFileController().getListFile(storageDirectory);
-            viewActivity.setListImages(new ListFile(context, sdFiles));
+            ListDimensions listDimensions = new ViewController().getListDimension(
+                    context, DatabaseHelper.getPreparedData());
+            viewActivity.setListImages(listDimensions);
             viewActivity.showFrameStorage();
             for (OnItemChangedListener l : listeners)
                 l.OnItemChanged();

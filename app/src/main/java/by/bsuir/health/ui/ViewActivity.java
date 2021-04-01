@@ -44,7 +44,6 @@ public class ViewActivity {
     private final ProgressBar pbProgress;
     private final ListView listDevices;
     private final GraphView gvGraph;
-//    private LineGraphSeries<DataPoint> series;
     private ProgressDialog progressDialog;
     private final String operatingModePulse;
     private final String operatingModeCardio;
@@ -75,7 +74,6 @@ public class ViewActivity {
         operatingModePulse  = appCompatActivity.getString(R.string.operating_mode_pulse);
         operatingModeCardio = appCompatActivity.getString(R.string.operating_mode_cardio);
         operatingModeSpo    = appCompatActivity.getString(R.string.operating_mode_spo);
-//        series              = new LineGraphSeries<>();
         icBluetoothBoundedDevice = R.drawable.ic_bluetooth_bounded_device;
         icBluetoothSearchDevice = R.drawable.ic_bluetooth_search_device;
         activity = appCompatActivity;
@@ -112,15 +110,6 @@ public class ViewActivity {
     public Activity getActivity() {
         return activity;
     }
-
-    //    public void setGvGraph(int MaxX) {
-//        this.series.setColor(Color.RED);
-//        this.gvGraph.addSeries(series);
-//        this.gvGraph.getViewport().setMinX(0);
-//        this.gvGraph.getViewport().setMaxX(MaxX);
-//        this.gvGraph.getViewport().setXAxisBoundsManual(true);
-//
-//    }
 
     public GraphView getGvGraph() {
         return gvGraph;
@@ -162,7 +151,7 @@ public class ViewActivity {
         return listImages;
     }
 
-    public void setListImages(ListFile listFile) {
+    public void setListImages(ListDimensions listFile) {
         this.listImages.setAdapter(listFile);
     }
 
@@ -207,14 +196,6 @@ public class ViewActivity {
         this.etConsole.setMovementMethod(movementMethod);
     }
 
-//    public LineGraphSeries<DataPoint> getSeries() {
-//        return series;
-//    }
-
-//    public void setSeriesPulse(LineGraphSeries<DataPoint> series) {
-//        this.series = series;
-//    }
-
     public String getOperatingModePulse() {
         return operatingModePulse;
     }
@@ -234,17 +215,5 @@ public class ViewActivity {
     public int getIcBluetoothSearchDevice() {
         return icBluetoothSearchDevice;
     }
-
-//    public void clearSeries(int maxX){
-////        seriesPulse.clearCursorModeCache();
-////        seriesPulse.clearReference(gvGraph);
-////        seriesCardio.clearCursorModeCache();
-////        seriesCardio.clearReference(gvGraph);
-////        seriesSpo.clearCursorModeCache();
-////        seriesSpo.clearReference(gvGraph);
-////        gvGraph.clearAnimation();
-////        gvGraph.clearFocus();
-//        setGvGraph(maxX);
-//    }
 }
 

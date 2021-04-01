@@ -1,12 +1,14 @@
 package by.bsuir.health.dao;
 
 import com.orm.SugarRecord;
+import com.orm.dsl.Unique;
 
 /**
  * @author Pablo on 24.03.2021
  * @project Health
  */
-public class DataDB extends SugarRecord {
+public class DatabaseDimension extends SugarRecord {
+    @Unique
     private String dataECG;
     private String date;
     private String time;
@@ -14,10 +16,11 @@ public class DataDB extends SugarRecord {
     private int description;
     private int numOfExtrasystole;
 
-    public DataDB(){}
+    public DatabaseDimension(){}
 
-    public DataDB(String date, String time,String dataECG, int pulse, int description, int
-            numOfExtrasystole){
+    public DatabaseDimension(String date, String time, String dataECG,  int pulse, int description,
+                             int numOfExtrasystole){
+        super();
         this.date = date;
         this.time = time;
         this.dataECG = dataECG;
@@ -62,3 +65,4 @@ public class DataDB extends SugarRecord {
         this.description = description;
     }
 }
+

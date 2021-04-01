@@ -7,12 +7,23 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import by.bsuir.health.MainActivity;
 import by.bsuir.health.R;
+import by.bsuir.health.bean.BluetoothConnector;
+import by.bsuir.health.dao.DatabaseDimension;
+import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
+import by.bsuir.health.ui.ListAdapter;
+import by.bsuir.health.ui.ListDimensions;
 import by.bsuir.health.ui.ViewActivity;
+
+import static by.bsuir.health.ui.ViewActivity.BT_BOUNDED;
+import static by.bsuir.health.ui.ViewActivity.BT_SEARCH;
 
 /**
  * @author Pablo on 08.03.2021
@@ -66,6 +77,62 @@ public class ViewController {
             }
         });
         quitDialog.show();
+    }
+
+    public ListAdapter getListAdapter(Context context, BluetoothConnector bluetoothConnector,
+                                      int type) throws BluetoothException {
+        bluetoothConnector.clear();
+        int iconType = R.drawable.ic_bluetooth_bounded_device;
+        switch (type) {
+            case BT_BOUNDED:
+                bluetoothConnector.setBluetoothDevices(BluetoothConnector.getBondedDevices());
+                iconType = R.drawable.ic_bluetooth_bounded_device;
+                break;
+            case BT_SEARCH:
+                iconType = R.drawable.ic_bluetooth_search_device;
+                break;
+        }
+        return new ListAdapter(context, bluetoothConnector.getBluetoothDevices(), iconType);
+    }
+
+    public ListDimensions getListDimension(Context context,
+                                           List<DatabaseDimension> databaseDimensions){
+        List<String> textDescription = getTextDescription(context, databaseDimensions);
+        for (DatabaseDimension databaseDimension : databaseDimensions){
+            switch (databaseDimension.getDescription()) {
+                case 0:
+                    databaseDimension.setDescription(R.drawable.ic_description_done);
+                    break;
+                case 1:
+                case 2:
+                    databaseDimension.setDescription(R.drawable.ic_description_warning);
+                    break;
+                case 3:
+                    databaseDimension.setDescription(R.drawable.ic_description_error);
+                    break;
+            }
+        }
+        return new ListDimensions(context, databaseDimensions, textDescription);
+    }
+
+    public List<String> getTextDescription(Context context,
+                                           List<DatabaseDimension> databaseDimensions){
+        List<String> textDescription = new ArrayList<>();
+        for (DatabaseDimension databaseDimension : databaseDimensions){
+            switch (databaseDimension.getDescription()) {
+                case 0:
+                    textDescription.add(context.getString(R.string.done));
+                    break;
+                case 1:
+                case 2:
+                    textDescription.add(context.getString(R.string.warning));
+                    break;
+                case 3:
+                    textDescription.add(context.getString(R.string.error));
+                     break;
+            }
+        }
+        return textDescription;
     }
 
     public void setProgressDialog(Context context, ProgressDialog progressDialog){

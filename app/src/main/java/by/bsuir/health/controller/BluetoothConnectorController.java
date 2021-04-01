@@ -2,21 +2,16 @@ package by.bsuir.health.controller;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.app.FragmentActivity;
 
-import by.bsuir.health.R;
 import by.bsuir.health.bean.BluetoothConnector;
-import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.exeption.bluetooth.ConnectionBluetoothException;
 import by.bsuir.health.service.ReceiverService;
 
-import static by.bsuir.health.ui.ViewActivity.BT_BOUNDED;
-import static by.bsuir.health.ui.ViewActivity.BT_SEARCH;
 import static by.bsuir.health.ui.ViewActivity.REQ_ENABLE_BT;
 
 /**
@@ -51,22 +46,6 @@ public class BluetoothConnectorController{
         if(isDevice(device.getName()))
             bluetoothConnector.connect(device);
         else throw new ConnectionBluetoothException("Not connected to this device");
-    }
-
-    public ListAdapter getListAdapter(Context context, BluetoothConnector bluetoothConnector,
-                                      int type) throws BluetoothException {
-        bluetoothConnector.clear();
-        int iconType = R.drawable.ic_bluetooth_bounded_device;
-        switch (type) {
-            case BT_BOUNDED:
-                bluetoothConnector.setBluetoothDevices(BluetoothConnector.getBondedDevices());
-                iconType = R.drawable.ic_bluetooth_bounded_device;
-                break;
-            case BT_SEARCH:
-                iconType = R.drawable.ic_bluetooth_search_device;
-                break;
-        }
-        return new ListAdapter(context, bluetoothConnector.getBluetoothDevices(), iconType);
     }
 
     public void addReceiver(ContextWrapper contextWrapper, ReceiverService receiverService) {

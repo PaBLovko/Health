@@ -24,4 +24,9 @@
     <string name="name_device">Name device</string>
     <string name="address_device">Address device</string>
     <string name="todo">Bluetooth icon</string>
+    <string name="date">Date</string>
+    <string name="description">Description</string>
+    <string name="done">Всё хорошо</string>
+    <string name="warning">Есть проблемы</string>
+    <string name="error">Ошибка измерений</string>
 </resources>

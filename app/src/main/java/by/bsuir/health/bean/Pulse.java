@@ -1,14 +1,20 @@
 package by.bsuir.health.bean;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import by.bsuir.health.controller.ViewController;
+import by.bsuir.health.dao.DatabaseDimension;
+import by.bsuir.health.dao.DatabaseHelper;
 import by.bsuir.health.dao.preference.PrefModel;
 import by.bsuir.health.ui.ViewActivity;
 
@@ -89,17 +95,17 @@ public class Pulse {
             @Override
             public void run() {
                 cancelTimer();
-//                SignalAnalysis signalAnalysis = new SignalAnalysis();
-//                signalAnalysis.setDataECG(chart.getData());
-//                Date date = new Date();
-//                @SuppressLint("SimpleDateFormat")
-//                SimpleDateFormat formatForDate = new SimpleDateFormat("dd.MM.yyyy");
-//                @SuppressLint("SimpleDateFormat")
-//                SimpleDateFormat formatForTime = new SimpleDateFormat("HH:mm E");
-//                DBHelper.SaveToDB(formatForDate.format(date),formatForTime.format(date),
-//                        chart.getData(), signalAnalysis.getPulse(),signalAnalysis.getPulse(),
-//                        signalAnalysis.getNumOfExtrasystole());
-//                List<DataDB> dataDBList= DBHelper.getList();
+                SignalAnalysis signalAnalysis = new SignalAnalysis(chart.getData());
+//                chart.setsignalAnalysis.analyseData();
+                Date date = new Date();
+                @SuppressLint("SimpleDateFormat")
+                SimpleDateFormat formatForDate = new SimpleDateFormat("dd.MM.yyyy");
+                @SuppressLint("SimpleDateFormat")
+                SimpleDateFormat formatForTime = new SimpleDateFormat("HH:mm E");
+                DatabaseHelper.SaveToDB(formatForDate.format(date),formatForTime.format(date),
+                        chart.getData(), signalAnalysis.analyseData(), signalAnalysis.getPulse(),
+                        signalAnalysis.getNumOfExtrasystole());
+                List<DatabaseDimension> dataDBList = DatabaseHelper.getList();
             }
         },preference.getDelayTimer());
     }

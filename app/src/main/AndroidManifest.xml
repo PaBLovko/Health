@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="by.bsuir.health">
+    package="by.bsuir.health"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -15,31 +17,28 @@
     
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher_foreground"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:name="com.orm.SugarApp"
+        android:roundIcon="@drawable/ic_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        android:name="com.orm.SugarApp"> <!--Используйте этот атрибут дословно-->
-
-        <meta-data android:name="DATABASE" android:value="sugar_example.db"/>
-        <meta-data android:name="VERSION" android:value="1"/>
-        <meta-data android:name="QUERY_LOG" android:value="true"/>
-        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.example"/>
         <activity
-            
-            android:name="by.bsuir.health.MainActivity"
+            android:name="MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<!--        <service-->
+        <meta-data android:name="DATABASE" android:value="dimension.db"/>
+        <meta-data android:name="VERSION" android:value="1"/>
+        <meta-data android:name="QUERY_LOG" android:value="true"/>
+        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="by.bsuir.health.dao"/>
+
+        <!--        <service-->
 <!--            android:name="ForegroundService"-->
 <!--            android:foregroundServiceType="location"/>-->
         <activity android:name=".dao.preference.PrefActivity" />
     </application>
-
 </manifest>

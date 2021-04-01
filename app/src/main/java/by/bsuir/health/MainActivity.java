@@ -12,11 +12,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.bean.Pulse;
-import by.bsuir.health.bean.SdFile;
 import by.bsuir.health.controller.BluetoothConnectorController;
 import by.bsuir.health.controller.SdFileController;
 import by.bsuir.health.controller.ThreadController;
@@ -29,7 +27,6 @@ import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
-import by.bsuir.health.service.OnItemChangedListener;
 import by.bsuir.health.service.OnSwitchChangedListener;
 import by.bsuir.health.service.ReceiverService;
 import by.bsuir.health.ui.ListAdapter;
@@ -50,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private String storageDirectory;
-    private ArrayList<SdFile> sdFiles;
+//    private ArrayList<SdFile> sdFiles;
     private ListAdapter listAdapter;
     private Pulse pulse;
     private PrefModel preference;
@@ -74,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 //        viewActivity.setGvGraph(preference.getPointsCount());
         new ViewController().setProgressDialog(this, viewActivity.getProgressDialog());
 
-        sdFiles = new ArrayList<>();
+//        sdFiles = new ArrayList<>();
 
         bluetoothConnector = new BluetoothConnector();
 
@@ -88,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             if (BluetoothConnector.isEnabled()) {
                 viewActivity.showFrameControls();
                 viewActivity.setSwitchEnableBtChecked(true);
-                listAdapter = new BluetoothConnectorController().getListAdapter(
+                listAdapter = new ViewController().getListAdapter(
                         this, bluetoothConnector, BT_BOUNDED);
                 viewActivity.setListDevices(listAdapter);
             }
@@ -107,10 +104,10 @@ public class MainActivity extends AppCompatActivity {
 
         checkedChangeService = new CheckedChangeService(viewActivity, this);
 
-        itemClickService = new ItemClickService(viewActivity,sdFiles, pulse,
+        itemClickService = new ItemClickService(viewActivity, pulse,
                 this, bluetoothConnector);
 
-        clickService = new ClickService(viewActivity,pulse,this, sdFiles, storageDirectory);
+        clickService = new ClickService(viewActivity,pulse,this, storageDirectory);
 
         receiverService = new ReceiverService(viewActivity, bluetoothConnector, listAdapter,
                 this, pulse);
@@ -140,13 +137,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ClickService.addItemListener(new OnItemChangedListener() {
-            @Override
-            public void OnItemChanged() {
-                sdFiles = clickService.getSdFiles();
-                itemClickService.setSdFiles(sdFiles);
-            }
-        });
+//        ClickService.addItemListener(new OnItemChangedListener() {
+//            @Override
+//            public void OnItemChanged() {
+//                sdFiles = clickService.getSdFiles();
+//                itemClickService.setSdFiles(sdFiles);
+//            }
+//        });
 
         new ViewController().setListeners(
                 viewActivity, checkedChangeService, itemClickService, clickService);
@@ -213,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if (resultCode == RESULT_OK && BluetoothConnector.isEnabled()) {
                     viewActivity.showFrameControls();
-                    listAdapter = new BluetoothConnectorController().getListAdapter(
+                    listAdapter = new ViewController().getListAdapter(
                             this, bluetoothConnector, BT_BOUNDED);
                     viewActivity.setListDevices(listAdapter);
                 } else if (resultCode == RESULT_CANCELED)
