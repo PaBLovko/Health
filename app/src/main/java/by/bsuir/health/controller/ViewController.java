@@ -14,10 +14,12 @@ import by.bsuir.health.MainActivity;
 import by.bsuir.health.R;
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.dao.DatabaseDimension;
+import by.bsuir.health.dao.DatabaseHelper;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
+import by.bsuir.health.service.ItemLongClickListener;
 import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.ui.ListDimensions;
 import by.bsuir.health.ui.ViewActivity;
@@ -42,27 +44,36 @@ public class ViewController {
     }
 
     public void viewToastShow(Activity activity, String text){
-        Toast.makeText(activity,"Mismatch of modes", Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity,text, Toast.LENGTH_SHORT).show();
     }
 
     public void setListeners(ViewActivity viewActivity, CheckedChangeService checkedChangeService,
-                             ItemClickService itemClickService, ClickService clickService) {
+                             ItemClickService itemClickService, ClickService clickService,
+                             ItemLongClickListener itemLongClickListener) {
         viewActivity.getSwitchEnableBt().setOnCheckedChangeListener(checkedChangeService);
         viewActivity.getBtnEnableSearch().setOnClickListener(clickService);
         viewActivity.getListDevices().setOnItemClickListener(itemClickService);
-        viewActivity.getBtnStorage().setOnClickListener(clickService);
+        viewActivity.getBtnSave().setOnClickListener(clickService);
         viewActivity.getListImages().setOnItemClickListener(itemClickService);
         viewActivity.getBtnStart().setOnClickListener(clickService);
         viewActivity.getBtnDisconnect().setOnClickListener(clickService);
         viewActivity.getSwitchLed().setOnCheckedChangeListener(checkedChangeService);
         viewActivity.getSwitchBuzzer().setOnCheckedChangeListener(checkedChangeService);
+        viewActivity.getListImages().setOnItemLongClickListener(itemLongClickListener);
+    }
+
+    public void showStorage(ViewActivity viewActivity){
+        ListDimensions listDimensions = new ViewController().getListDimension(
+                viewActivity.getActivity(), DatabaseHelper.getPreparedData());
+        viewActivity.setListImages(listDimensions);
+        viewActivity.showFrameStorage();
     }
 
     public void openQuitDialog(final MainActivity mainActivity) {
         AlertDialog.Builder quitDialog = new AlertDialog.Builder(mainActivity);
         quitDialog.setTitle("Выход: Вы уверены?");
 
-        quitDialog.setPositiveButton("Таки да!", new DialogInterface.OnClickListener() {
+        quitDialog.setPositiveButton("Да", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // TODO Auto-generated method stub
@@ -78,6 +89,8 @@ public class ViewController {
         });
         quitDialog.show();
     }
+
+
 
     public ListAdapter getListAdapter(Context context, BluetoothConnector bluetoothConnector,
                                       int type) throws BluetoothException {
@@ -107,7 +120,7 @@ public class ViewController {
                 case 2:
                     databaseDimension.setDescription(R.drawable.ic_description_warning);
                     break;
-                case 3:
+                default:
                     databaseDimension.setDescription(R.drawable.ic_description_error);
                     break;
             }
@@ -127,7 +140,7 @@ public class ViewController {
                 case 2:
                     textDescription.add(context.getString(R.string.warning));
                     break;
-                case 3:
+                default:
                     textDescription.add(context.getString(R.string.error));
                      break;
             }

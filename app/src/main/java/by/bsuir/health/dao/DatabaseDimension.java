@@ -9,7 +9,7 @@ import com.orm.dsl.Unique;
  */
 public class DatabaseDimension extends SugarRecord {
     @Unique
-    private String dataECG;
+    private String data;
     private String date;
     private String time;
     private int pulse;
@@ -18,12 +18,12 @@ public class DatabaseDimension extends SugarRecord {
 
     public DatabaseDimension(){}
 
-    public DatabaseDimension(String date, String time, String dataECG,  int pulse, int description,
+    public DatabaseDimension(String date, String time, String data,  int pulse, int description,
                              int numOfExtrasystole){
         super();
         this.date = date;
         this.time = time;
-        this.dataECG = dataECG;
+        this.data = data;
         this.description = description;
         this.numOfExtrasystole = numOfExtrasystole;
         this.pulse = pulse;
@@ -34,11 +34,11 @@ public class DatabaseDimension extends SugarRecord {
     public String getDate(){
         return this.date;
     }
-    public String getDataECG() {
-        return dataECG;
+    public String getData() {
+        return data;
     }
-    public void setDataECG(String dataECG) {
-        this.dataECG = dataECG;
+    public void setData(String data) {
+        this.data = data;
     }
     public int getPulse() {
         return pulse;

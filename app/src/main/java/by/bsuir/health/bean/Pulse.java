@@ -1,20 +1,16 @@
 package by.bsuir.health.bean;
 
-import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.method.MovementMethod;
+import android.text.method.ScrollingMovementMethod;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import by.bsuir.health.controller.ViewController;
-import by.bsuir.health.dao.DatabaseDimension;
-import by.bsuir.health.dao.DatabaseHelper;
 import by.bsuir.health.dao.preference.PrefModel;
 import by.bsuir.health.ui.ViewActivity;
 
@@ -31,6 +27,9 @@ public class Pulse {
     private PrefModel preference;
     private ViewActivity viewActivity;
     private Chart chart;
+    private Filter filter;
+    private boolean doAnalysis;
+    private SignalAnalysis signalAnalysis;
 
     public Pulse(BluetoothConnector bluetoothConnector, ViewActivity viewActivity,
                  PrefModel preference) {
@@ -39,6 +38,9 @@ public class Pulse {
         this.preference = preference;
         this.viewActivity = viewActivity;
         this.handler = new Handler(Looper.getMainLooper());
+        this.filter = new Filter(preference.isFilterMode());
+        this.doAnalysis = true;
+        this.signalAnalysis = new SignalAnalysis();
     }
 
     public void setConnectedThread(BluetoothConnector.ConnectedThread connectedThread) {
@@ -65,24 +67,22 @@ public class Pulse {
             public void run() {
                 if (connectedThread.getLastSensorValues() != null) {
                     String lastSensorValues = connectedThread.getLastSensorValues().trim();
-//                    MovementMethod movementMethod = new ScrollingMovementMethod();
                     Map<String, String> dataSensor = parseData(lastSensorValues);
-                        if (dataSensor != null && isDataContainsKey(dataSensor) &&
-                                isDataNotNull(dataSensor)) {
-                            int graph = Integer.parseInt(dataSensor.get("graph"));
-                            int data = Integer.parseInt(dataSensor.get("data"));
-                            int command = Integer.parseInt(dataSensor.get("command"));
-//                            String pulse = "Пульс: "+data;
-//                            viewActivity.setEtConsoleAndMovementMethod(pulse, movementMethod);
-                            if (checkCommand(command)){
-                                chart.addData(graph, preference.getPointsCount());
-                            } else{
-                                new ViewController().viewToastShow(viewActivity.getActivity(),
-                                        "Mismatch of modes");
-                                cancelTimer();
-                                return;
-                            }
+                    if (dataSensor != null && isDataContainsKey(dataSensor) &&
+                            isDataNotNull(dataSensor)) {
+                        int graph = Integer.parseInt(dataSensor.get("graph"));
+                        int command = Integer.parseInt(dataSensor.get("command"));
+                        int data = filter.step(graph);
+                        if (checkCommand(command)){
+                            chart.addData(data, preference.getPointsCount());
+                        } else{
+                            new ViewController().viewToastShow(viewActivity.getActivity(),
+                                    "Mismatch of modes");
+                            cancelTimer();
+                            doAnalysis = false;
+                            return;
                         }
+                    }
                 }
                 handler.postDelayed(this, 0);
             }
@@ -90,28 +90,32 @@ public class Pulse {
     }
 
     public void counter(){
+        if (!doAnalysis) return;
         final Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
                 cancelTimer();
-                SignalAnalysis signalAnalysis = new SignalAnalysis(chart.getData());
-//                chart.setsignalAnalysis.analyseData();
-                Date date = new Date();
-                @SuppressLint("SimpleDateFormat")
-                SimpleDateFormat formatForDate = new SimpleDateFormat("dd.MM.yyyy");
-                @SuppressLint("SimpleDateFormat")
-                SimpleDateFormat formatForTime = new SimpleDateFormat("HH:mm E");
-                DatabaseHelper.SaveToDB(formatForDate.format(date),formatForTime.format(date),
-                        chart.getData(), signalAnalysis.analyseData(), signalAnalysis.getPulse(),
-                        signalAnalysis.getNumOfExtrasystole());
-                List<DatabaseDimension> dataDBList = DatabaseHelper.getList();
+                signalAnalysis.setData(chart.getData());
+                signalAnalysis.analyseData();
+                MovementMethod movementMethod = new ScrollingMovementMethod();
+                viewActivity.setEtConsoleAndMovementMethod(signalAnalysis.getMode()+" "+
+                        signalAnalysis.getPulse()+" "+
+                        signalAnalysis.getNumOfExtrasystole(), movementMethod);
             }
         },preference.getDelayTimer());
     }
 
     public void cancelTimer() {
-        if (handler != null) handler.removeCallbacks(timer);
+        if (handler != null) {
+            handler.removeCallbacks(timer);
+        }
+    }
+
+    public void clearChart(){
+        chart = new Chart(viewActivity.getGvGraph());
+        chart.settings(preference.getPointsCount());
+        viewActivity.setEtConsoleAndMovementMethod("", new ScrollingMovementMethod());
     }
 
     private boolean checkCommand(int command){
@@ -150,5 +154,13 @@ public class Pulse {
             return map;
         }
         return null;
+    }
+
+    public SignalAnalysis getSignalAnalysis() {
+        return signalAnalysis;
+    }
+
+    public Chart getChart() {
+        return chart;
     }
 }

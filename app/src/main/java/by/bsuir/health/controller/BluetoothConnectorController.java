@@ -33,10 +33,11 @@ public class BluetoothConnectorController{
     }
 
     public BluetoothConnector.ConnectedThread connectToExisting(
-            BluetoothConnector bluetoothConnector,BluetoothDevice device) throws BluetoothException{
+            BluetoothConnector bluetoothConnector, BluetoothDevice device) throws BluetoothException{
         bluetoothConnect(bluetoothConnector, device);
         BluetoothConnector.ConnectedThread connectedThread =
                 new BluetoothConnector.ConnectedThread(bluetoothConnector.getSocket());
+        connectedThread.connect();
         connectedThread.start();
         return connectedThread;
     }

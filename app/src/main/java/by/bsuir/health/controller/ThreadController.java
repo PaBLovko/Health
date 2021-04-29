@@ -13,10 +13,11 @@ public class ThreadController {
     public void disconnection(Pulse pulse)throws BluetoothException,IOException{
         if (pulse != null){
             pulse.cancelTimer();
-            if (pulse.getBluetoothConnector().isConnected())
-                pulse.getBluetoothConnector().disconnect();
+            pulse.clearChart();
             if (pulse.getConnectedThread() != null && pulse.getConnectedThread().isConnected())
                 pulse.getConnectedThread().disconnect();
+            if (pulse.getBluetoothConnector().isConnected())
+                pulse.getBluetoothConnector().disconnect();
         }
     }
 }

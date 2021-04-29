@@ -1,5 +1,6 @@
 package by.bsuir.health.util;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -24,7 +25,7 @@ public class CheckPermissionUtil {
     public static boolean showSystemSetting = true;
     private static CheckPermissionUtil permissionsUtil;
     private IPermissionsResult mPermissionsResult;
-    AlertDialog mPermissionDialog;
+    private AlertDialog mPermissionDialog;
 
     private static class CheckPermissionInstance {
         private static final CheckPermissionUtil mInstance = new CheckPermissionUtil();
@@ -108,9 +109,14 @@ public class CheckPermissionUtil {
         }
     }
 
-    public interface IPermissionsResult {
-        void passPermissions();
-        void forbidPermissions();
-        void repeatPermissions();
+    public static String[] addPermissions() {
+        return new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
     }
+
+
 }

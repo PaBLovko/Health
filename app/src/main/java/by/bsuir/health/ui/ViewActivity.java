@@ -29,13 +29,14 @@ public class ViewActivity {
     public static final int BT_SEARCH = 22;
 
     private final FrameLayout frameMessage;
-    private final LinearLayout frameControls;
-    private final RelativeLayout frameLedControls;
+    private final LinearLayout frameControllers;
+    private final RelativeLayout frameControls;
     private final LinearLayout frameStorage;
+    private final LinearLayout frameResult;
     private final ListView listImages;
     private final Button btnDisconnect;
     private final Button btnStart;
-    private final Button btnStorage;
+    private final Button btnSave;
     private final Button btnEnableSearch;
     private final Switch switchBuzzer;
     private final Switch switchLed;
@@ -44,6 +45,7 @@ public class ViewActivity {
     private final ProgressBar pbProgress;
     private final ListView listDevices;
     private final GraphView gvGraph;
+    private final GraphView gvResult;
     private ProgressDialog progressDialog;
     private final String operatingModePulse;
     private final String operatingModeCardio;
@@ -56,9 +58,10 @@ public class ViewActivity {
         appCompatActivity.setContentView(R.layout.activity_main);
         progressDialog      = new ProgressDialog(appCompatActivity);
         frameMessage        = appCompatActivity.findViewById(R.id.frame_message);
-        frameControls       = appCompatActivity.findViewById(R.id.frame_control);
+        frameControllers    = appCompatActivity.findViewById(R.id.frame_controllers);
         frameStorage        = appCompatActivity.findViewById(R.id.frame_storage);
-        frameLedControls    = appCompatActivity.findViewById(R.id.frameLedControls);
+        frameControls       = appCompatActivity.findViewById(R.id.frame_controls);
+        frameResult         = appCompatActivity.findViewById(R.id.frame_result);
         listImages          = appCompatActivity.findViewById(R.id.lv_image);
         switchEnableBt      = appCompatActivity.findViewById(R.id.switch_enable_bt);
         btnEnableSearch     = appCompatActivity.findViewById(R.id.btn_enable_search);
@@ -66,11 +69,12 @@ public class ViewActivity {
         listDevices         = appCompatActivity.findViewById(R.id.lv_device);
         btnDisconnect       = appCompatActivity.findViewById(R.id.btn_disconnect);
         btnStart            = appCompatActivity.findViewById(R.id.btn_start);
-        btnStorage          = appCompatActivity.findViewById(R.id.btn_storage);
+        btnSave             = appCompatActivity.findViewById(R.id.btn_save);
         switchBuzzer        = appCompatActivity.findViewById(R.id.switch_buzzer);
         switchLed           = appCompatActivity.findViewById(R.id.switch_led);
         etConsole           = appCompatActivity.findViewById(R.id.et_console);
         gvGraph             = appCompatActivity.findViewById(R.id.gv_graph);
+        gvResult            = appCompatActivity.findViewById(R.id.gv_result);
         operatingModePulse  = appCompatActivity.getString(R.string.operating_mode_pulse);
         operatingModeCardio = appCompatActivity.getString(R.string.operating_mode_cardio);
         operatingModeSpo    = appCompatActivity.getString(R.string.operating_mode_spo);
@@ -81,30 +85,62 @@ public class ViewActivity {
 
     public void showFrameMessage() {
         frameMessage.setVisibility(View.VISIBLE);
-        frameLedControls.setVisibility(View.GONE);
         frameControls.setVisibility(View.GONE);
+        frameControllers.setVisibility(View.GONE);
         frameStorage.setVisibility(View.GONE);
+        frameResult.setVisibility(View.GONE);
+    }
+
+    public void showFrameControllers() {
+        frameMessage.setVisibility(View.GONE);
+        frameControls.setVisibility(View.GONE);
+        frameControllers.setVisibility(View.VISIBLE);
+        frameStorage.setVisibility(View.GONE);
+        frameResult.setVisibility(View.GONE);
     }
 
     public void showFrameControls() {
-        frameMessage.setVisibility(View.GONE);
-        frameLedControls.setVisibility(View.GONE);
         frameControls.setVisibility(View.VISIBLE);
-        frameStorage.setVisibility(View.GONE);
-    }
-
-    public void showFrameLedControls() {
-        frameLedControls.setVisibility(View.VISIBLE);
         frameMessage.setVisibility(View.GONE);
-        frameControls.setVisibility(View.GONE);
+        frameControllers.setVisibility(View.GONE);
         frameStorage.setVisibility(View.GONE);
+        frameResult.setVisibility(View.GONE);
     }
 
     public void showFrameStorage(){
-        frameLedControls.setVisibility(View.GONE);
-        frameMessage.setVisibility(View.GONE);
         frameControls.setVisibility(View.GONE);
+        frameMessage.setVisibility(View.GONE);
+        frameControllers.setVisibility(View.GONE);
         frameStorage.setVisibility(View.VISIBLE);
+        frameResult.setVisibility(View.GONE);
+    }
+
+    public void showFrameResult(){
+        frameControls.setVisibility(View.GONE);
+        frameMessage.setVisibility(View.GONE);
+        frameControllers.setVisibility(View.GONE);
+        frameStorage.setVisibility(View.GONE);
+        frameResult.setVisibility(View.VISIBLE);
+    }
+
+    public FrameLayout getFrameMessage() {
+        return frameMessage;
+    }
+
+    public LinearLayout getFrameControllers() {
+        return frameControllers;
+    }
+
+    public RelativeLayout getFrameControls() {
+        return frameControls;
+    }
+
+    public LinearLayout getFrameStorage() {
+        return frameStorage;
+    }
+
+    public LinearLayout getFrameResult() {
+        return frameResult;
     }
 
     public Activity getActivity() {
@@ -114,6 +150,8 @@ public class ViewActivity {
     public GraphView getGvGraph() {
         return gvGraph;
     }
+
+    public GraphView getGvResult() {return gvResult;}
 
     public void setProgressDialog(ProgressDialog progressDialog) {
         this.progressDialog = progressDialog;
@@ -143,8 +181,8 @@ public class ViewActivity {
         return btnStart;
     }
 
-    public Button getBtnStorage() {
-        return btnStorage;
+    public Button getBtnSave() {
+        return btnSave;
     }
 
     public ListView getListImages() {

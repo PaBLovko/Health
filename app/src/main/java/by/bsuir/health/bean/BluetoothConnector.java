@@ -16,12 +16,13 @@ import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.exeption.bluetooth.ConnectionBluetoothException;
 import by.bsuir.health.exeption.bluetooth.NotSupportedBluetoothException;
 
+import static by.bsuir.health.exeption.bluetooth.BluetoothException.NOT_CONNECTED;
+
 /**
  * @author Pablo on 29.01.2021
  * @project Health
  */
 public class BluetoothConnector {
-    private static final String NOT_CONNECTED = "Not connected";
 
     private static BluetoothAdapter mBluetoothAdapter;
 
@@ -39,7 +40,8 @@ public class BluetoothConnector {
         if (isConnected())
             return;
         try {
-            Method m = device.getClass().getMethod("createRfcommSocket", int.class);
+            Method m =
+                    device.getClass().getMethod("createRfcommSocket", int.class);
             socket = (BluetoothSocket) m.invoke(device, 1);
             socket.connect();
         } catch (Exception e) {
@@ -49,22 +51,25 @@ public class BluetoothConnector {
     }
 
     public static class ConnectedThread extends Thread {
-        private final DataOutputStream outputStream;
-        private final DataInputStream inputStream;
+        private DataOutputStream outputStream;
+        private DataInputStream inputStream;
         private boolean isConnected;
         private String lastSensorValues;
+        private BluetoothSocket bluetoothSocket;
 
         public ConnectedThread(BluetoothSocket bluetoothSocket) {
-            DataInputStream inputStream = null;
-            DataOutputStream outputStream = null;
+            this.bluetoothSocket = bluetoothSocket;
+            this.inputStream = null;
+            this.outputStream = null;
+        }
+
+        public synchronized void connect(){
             try {
                 outputStream = new DataOutputStream(bluetoothSocket.getOutputStream());
                 inputStream = new DataInputStream(bluetoothSocket.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.inputStream = inputStream;
-            this.outputStream = outputStream;
             isConnected = true;
         }
 

@@ -10,7 +10,7 @@ import by.bsuir.health.R;
  * @project Health
  */
 
-public class PrefFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -10,16 +10,15 @@ import by.bsuir.health.R;
  * @project Health
  */
 
-public class PrefActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pref);
-
+        setContentView(R.layout.activity_settings);
         getFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, new PrefFragment())
+                .replace(R.id.fragment_container_settings, new SettingsFragment())
                 .commit();
     }
 }

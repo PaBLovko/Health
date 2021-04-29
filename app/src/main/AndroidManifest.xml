@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="by.bsuir.health"
-    android:versionCode="1"
-    android:versionName="1.0">
+    package="by.bsuir.health">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -16,13 +14,13 @@
 
     
     <application
-        android:allowBackup="true"
-        android:icon="@drawable/ic_launcher_foreground"
-        android:label="@string/app_name"
-        android:name="com.orm.SugarApp"
-        android:roundIcon="@drawable/ic_launcher_foreground"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+            android:allowBackup="true"
+            android:icon="@drawable/ic_launcher_foreground"
+            android:label="@string/app_name"
+            android:name="com.orm.SugarApp"
+            android:roundIcon="@drawable/ic_launcher_foreground"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
         <activity
             android:name="MainActivity"
             android:screenOrientation="portrait">
@@ -32,13 +30,13 @@
             </intent-filter>
         </activity>
         <meta-data android:name="DATABASE" android:value="dimension.db"/>
-        <meta-data android:name="VERSION" android:value="1"/>
+        <meta-data android:name="VERSION" android:value="2"/>
         <meta-data android:name="QUERY_LOG" android:value="true"/>
         <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="by.bsuir.health.dao"/>
 
         <!--        <service-->
 <!--            android:name="ForegroundService"-->
 <!--            android:foregroundServiceType="location"/>-->
-        <activity android:name=".dao.preference.PrefActivity" />
+        <activity android:name=".dao.preference.SettingsActivity" />
     </application>
 </manifest>

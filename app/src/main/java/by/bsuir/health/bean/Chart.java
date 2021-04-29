@@ -46,12 +46,44 @@ public class Chart{
         this.graphView.getViewport().setXAxisBoundsManual(true);
     }
 
-    public void deleteData(){
+    private void deleteData(){
         graphView.removeAllSeries();
     }
 
     public ArrayList<Integer> getData(){
         return dataOfEntry;
+    }
+
+    public GraphView getGraphView() {
+        return graphView;
+    }
+
+    public void setGraphView(GraphView graphView) {
+        this.graphView = graphView;
+    }
+
+    public ArrayList<Integer> getDataOfEntry() {
+        return dataOfEntry;
+    }
+
+    public void setDataOfEntry(ArrayList<Integer> dataOfEntry) {
+        this.dataOfEntry = dataOfEntry;
+    }
+
+    public LineGraphSeries<DataPoint> getSeries() {
+        return series;
+    }
+
+    public void setSeries(LineGraphSeries<DataPoint> series) {
+        this.series = series;
+    }
+
+    public int getXLastValue() {
+        return xLastValue;
+    }
+
+    public void setXLastValue(int xLastValue) {
+        this.xLastValue = xLastValue;
     }
 }
 

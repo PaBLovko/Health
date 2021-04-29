@@ -7,12 +7,12 @@
     <string name="stop_search">Остановить поиск</string>
     <string name="disconnect">Отключить</string>
     <string name="storage">Сохранения</string>
+    <string name="save">Сохранить</string>
     <string name="start">Начать</string>
     <string name="buzzer">Динамик</string>
     <string name="connecting">Соединение...</string>
     <string name="please_wait">Подождите, пожалуйста...</string>
     <string name="led">Светодиод</string>
-    <string name="settings">Настройки</string>
     <string name="operating_mode">operation_mode</string>
     <string name="operating_mode_spo">Сатурация кислорода в крови</string>
     <string name="operating_mode_pulse">Пульсометр</string>
@@ -29,4 +29,6 @@
     <string name="done">Всё хорошо</string>
     <string name="warning">Есть проблемы</string>
     <string name="error">Ошибка измерений</string>
+    <string name="settings">Настройки</string>
+    <string name="key_filter_mode">key_filter_mode</string>
 </resources>

@@ -8,24 +8,22 @@ import java.util.Collections;
  * @project Health
  */
 public class SignalAnalysis {
-    private ArrayList<Integer> ecgData;
+    private ArrayList<Integer> Data;
     private ArrayList<Integer> listOfIndex;
     private int numOfExtrasystole;
     private int numOfExtrasystoleInRow;
     private int pulse;
+    private int mode;
+    private boolean isAnalyzed;
 
-//    @Inject
-//    public SignalAnalysis(){}
-
-    public SignalAnalysis(ArrayList<Integer> ecgData){
-        this.ecgData = ecgData;
+    public SignalAnalysis(){
+        this.Data = new ArrayList<>();
         this.listOfIndex = new ArrayList<>();
     }
 
-//    public void setDataECG(ArrayList<Integer> ecgData){
-//        this.ecgData = ecgData;
-//        listOfIndex = new ArrayList<>();
-//    }
+    public void setData(ArrayList<Integer> data) {
+        Data = data;
+    }
 
     public int getPulse(){
         return pulse;
@@ -36,13 +34,20 @@ public class SignalAnalysis {
     public int getNumOfExtrasystoleInRow() {
         return numOfExtrasystoleInRow;
     }
+    public int getMode() {
+        return mode;
+    }
+
+    public boolean isAnalyzed() {
+        return isAnalyzed;
+    }
 
     private void analysePulse(){
-        float maxVal = Collections.max(ecgData);
+        float maxVal = Collections.max(Data);
         float percentOfMaxVal = maxVal - (maxVal*30)/100;
         pulse = 0;
-        for(int i = 0;i<ecgData.size()-2;i++){
-            if((ecgData.get(i+1)-ecgData.get(i))*(ecgData.get(i+2)-ecgData.get(i+1))<=0&&ecgData
+        for(int i = 0; i< Data.size()-2; i++){
+            if((Data.get(i+1)- Data.get(i))*(Data.get(i+2)- Data.get(i+1))<=0&& Data
                     .get(i+1)>=percentOfMaxVal){
                 pulse++;
                 listOfIndex.add(i+1);
@@ -87,10 +92,11 @@ public class SignalAnalysis {
     public int analyseData(){
         analysePulse();
         boolean state = analyseExtrasystole();
-        int mode = 0;
-        if (pulse < 55) mode = 1;
-        else if (pulse > 90) mode = 2;
+        mode = 0;
+        if (pulse < 50) mode = 1;
+        else if (pulse > 120) mode = 2;
         if (!state) mode = 3;
+        isAnalyzed = true;
         return mode;
     }
 

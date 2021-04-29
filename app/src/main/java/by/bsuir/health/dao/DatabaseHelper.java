@@ -16,9 +16,9 @@ public class DatabaseHelper {
     private static DatabaseDimension databaseDimension;
     public DatabaseHelper(){}
 
-    public static void SaveToDB(String date, String time, ArrayList<Integer> dataECG,
+    public static void SaveToDB(String date, String time, ArrayList<Integer> data,
                                 int pulse, int description, int numOfExtrasystole){
-        String json = fromArrayToJson(dataECG);
+        String json = fromArrayToJson(data);
         databaseDimension = new DatabaseDimension(
                 date, time, json, pulse, description, numOfExtrasystole);
         databaseDimension.save();
@@ -29,11 +29,11 @@ public class DatabaseHelper {
         return databaseDimension;
     }
 
-    public static String fromArrayToJson(ArrayList<Integer> dataECG){
-        return new Gson().toJson(dataECG);
+    public static String fromArrayToJson(ArrayList<Integer> data){
+        return new Gson().toJson(data);
     }
 
-    public static ArrayList<Float> fromJsonToArray(String data){
+    public static ArrayList<Integer> fromJsonToArray(String data){
         Type type = new TypeToken<ArrayList<Integer>>(){}.getType();
         return new Gson().fromJson(data,type);
     }
@@ -50,30 +50,6 @@ public class DatabaseHelper {
     public static List<DatabaseDimension> getList(){
         return DatabaseDimension.listAll(DatabaseDimension.class);
     }
-
-//    public static ArrayList<ArrayList<DatabaseDimension>> getPreparedData(){
-//        List<DatabaseDimension> dbList = getList();
-//        ArrayList<ArrayList<DatabaseDimension>> sendData = new ArrayList<>();
-//        String startDate;
-//        boolean state;
-//        Iterator<DatabaseDimension> i = dbList.iterator();
-//        while (!dbList.isEmpty()){
-//            ArrayList<DatabaseDimension> list = new ArrayList<>();
-//            startDate = dbList.get(0).getDate();
-//            state = true;
-//            while (i.hasNext() && state) {
-//                DatabaseDimension innerData = i.next();
-//                if (startDate.equals(innerData.getDate())) {
-//                    list.add(innerData);
-//                    i.remove();
-//                }
-//                else state = false;
-//            }
-//            if (!list.isEmpty()) sendData.add(list);
-//            i = dbList.iterator();
-//        }
-//        return sendData;
-//    }
 
     public static List<DatabaseDimension> getPreparedData(){
         List<DatabaseDimension> dbList = getList();

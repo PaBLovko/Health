@@ -55,9 +55,10 @@ public class ListDimensions extends BaseAdapter {
         String textDimension = textDimensions.get(position);
         if (dimension != null) {
             String data = dimension.getTime()+" "+dimension.getDate();
+            int iconType = dimension.getDescription();
             ((TextView) view.findViewById(R.id.tv_name)).setText(data);
             ((TextView) view.findViewById(R.id.tv_address)).setText(textDimension);
-            ((ImageView) view.findViewById(R.id.iv_icon)).setImageResource(dimension.getDescription());
+            ((ImageView) view.findViewById(R.id.iv_icon)).setImageResource(iconType);
         }
         return view;
     }

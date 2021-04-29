@@ -2,7 +2,6 @@ package by.bsuir.health;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,24 +15,23 @@ import java.io.IOException;
 import by.bsuir.health.bean.BluetoothConnector;
 import by.bsuir.health.bean.Pulse;
 import by.bsuir.health.controller.BluetoothConnectorController;
-import by.bsuir.health.controller.SdFileController;
 import by.bsuir.health.controller.ThreadController;
 import by.bsuir.health.controller.ViewController;
 import by.bsuir.health.dao.preference.OnDelayChangedListener;
-import by.bsuir.health.dao.preference.PrefActivity;
 import by.bsuir.health.dao.preference.PrefModel;
-import by.bsuir.health.dao.storage.Storage;
+import by.bsuir.health.dao.preference.SettingsActivity;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
 import by.bsuir.health.service.CheckedChangeService;
 import by.bsuir.health.service.ClickService;
 import by.bsuir.health.service.ItemClickService;
+import by.bsuir.health.service.ItemLongClickListener;
 import by.bsuir.health.service.OnSwitchChangedListener;
 import by.bsuir.health.service.ReceiverService;
 import by.bsuir.health.ui.ListAdapter;
 import by.bsuir.health.ui.ViewActivity;
 import by.bsuir.health.util.CheckPermissionUtil;
+import by.bsuir.health.util.IPermissionsResult;
 
-import static by.bsuir.health.dao.storage.Storage.DIR_SD;
 import static by.bsuir.health.ui.ViewActivity.BT_BOUNDED;
 import static by.bsuir.health.ui.ViewActivity.REQ_ENABLE_BT;
 
@@ -46,14 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private String storageDirectory;
-//    private ArrayList<SdFile> sdFiles;
     private ListAdapter listAdapter;
     private Pulse pulse;
     private PrefModel preference;
     private CheckPermissionUtil checkPermissionUtil;
-    private String[] permissions;
-
     private BluetoothConnector bluetoothConnector;
 
     private ViewActivity viewActivity;
@@ -62,16 +56,14 @@ public class MainActivity extends AppCompatActivity {
     private ItemClickService itemClickService;
     private ClickService clickService;
     private ReceiverService receiverService;
+    private ItemLongClickListener itemLongClickService;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preference = new PrefModel(this);
         viewActivity = new ViewActivity(this);
-//        viewActivity.setGvGraph(preference.getPointsCount());
         new ViewController().setProgressDialog(this, viewActivity.getProgressDialog());
-
-//        sdFiles = new ArrayList<>();
 
         bluetoothConnector = new BluetoothConnector();
 
@@ -83,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if (BluetoothConnector.isEnabled()) {
-                viewActivity.showFrameControls();
+                viewActivity.showFrameControllers();
                 viewActivity.setSwitchEnableBtChecked(true);
                 listAdapter = new ViewController().getListAdapter(
                         this, bluetoothConnector, BT_BOUNDED);
@@ -93,24 +85,22 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        permissions = new SdFileController().addPermissions();
         checkPermissionUtil = CheckPermissionUtil.getInstance();
-        checkPermissionUtil.checkPermissions(this, permissions, permissionsResult);
+        checkPermissionUtil.checkPermissions(this, CheckPermissionUtil.addPermissions(),
+                permissionsResult);
 
-        if (Storage.cardAvailable()) storageDirectory =
-                Environment.getExternalStorageDirectory().toString() + DIR_SD;
 
         pulse = new Pulse(bluetoothConnector, viewActivity, preference);
 
         checkedChangeService = new CheckedChangeService(viewActivity, this);
 
-        itemClickService = new ItemClickService(viewActivity, pulse,
-                this, bluetoothConnector);
+        itemClickService = new ItemClickService(viewActivity, pulse, bluetoothConnector);
 
-        clickService = new ClickService(viewActivity,pulse,this, storageDirectory);
+        itemLongClickService = new ItemLongClickListener(viewActivity);
 
-        receiverService = new ReceiverService(viewActivity, bluetoothConnector, listAdapter,
-                this, pulse);
+        clickService = new ClickService(viewActivity,pulse,this);
+
+        receiverService = new ReceiverService(viewActivity, bluetoothConnector, listAdapter, pulse);
 
         new BluetoothConnectorController().addReceiver(this, receiverService);
 
@@ -137,20 +127,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        ClickService.addItemListener(new OnItemChangedListener() {
-//            @Override
-//            public void OnItemChanged() {
-//                sdFiles = clickService.getSdFiles();
-//                itemClickService.setSdFiles(sdFiles);
-//            }
-//        });
-
-        new ViewController().setListeners(
-                viewActivity, checkedChangeService, itemClickService, clickService);
+        new ViewController().setListeners(viewActivity, checkedChangeService, itemClickService,
+                clickService, itemLongClickService);
     }
 
-    CheckPermissionUtil.IPermissionsResult permissionsResult =
-            new CheckPermissionUtil.IPermissionsResult() {
+    IPermissionsResult permissionsResult =
+            new IPermissionsResult() {
                 @Override
                 public void passPermissions() {
                     Toast.makeText(MainActivity.this, "Welcome",
@@ -163,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void repeatPermissions() {
                     checkPermissionUtil.checkPermissions(
-                            MainActivity.this, permissions, permissionsResult);
+                            MainActivity.this, CheckPermissionUtil.addPermissions(),
+                            permissionsResult);
                 }
             };
 
@@ -175,9 +158,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.item_preference) {
-            Intent intent = new Intent(this, PrefActivity.class);
+        pulse.cancelTimer();
+        if (item.getItemId() == R.id.item_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
+        }
+        else if (item.getItemId() == R.id.item_storage){
+            new ViewController().showStorage(viewActivity);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -209,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQ_ENABLE_BT) {
             try {
                 if (resultCode == RESULT_OK && BluetoothConnector.isEnabled()) {
-                    viewActivity.showFrameControls();
+                    viewActivity.showFrameControllers();
                     listAdapter = new ViewController().getListAdapter(
                             this, bluetoothConnector, BT_BOUNDED);
                     viewActivity.setListDevices(listAdapter);
@@ -223,7 +210,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        new ViewController().openQuitDialog(this);
+        if (viewActivity.getFrameStorage().isShown()){
+            if (pulse.getConnectedThread() != null && pulse.getConnectedThread().isConnected())
+                viewActivity.showFrameControls();
+            else if (viewActivity.getSwitchEnableBt().isChecked())
+                viewActivity.showFrameControllers();
+            else viewActivity.showFrameMessage();
+        }else if (viewActivity.getFrameResult().isShown()){
+            viewActivity.showFrameStorage();
+        }else new ViewController().openQuitDialog(this);
     }
 
     @Override

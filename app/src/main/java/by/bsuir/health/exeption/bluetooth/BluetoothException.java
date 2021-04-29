@@ -5,6 +5,7 @@ package by.bsuir.health.exeption.bluetooth;
  * @project Health
  */
 public class BluetoothException extends Exception {
+    public static final String NOT_CONNECTED = "Not connected";
     public BluetoothException(Throwable throwable) {
         super(throwable);
     }

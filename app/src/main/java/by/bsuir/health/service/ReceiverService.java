@@ -1,6 +1,5 @@
 package by.bsuir.health.service;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -27,16 +26,14 @@ public class ReceiverService extends BroadcastReceiver {
     private ViewActivity viewActivity;
     private BluetoothConnector bluetoothConnector;
     private ListAdapter listAdapter;
-    private Activity activity;
     private Pulse pulse;
     private AsyncTaskConnect asyncTaskConnect;
 
     public ReceiverService(ViewActivity viewActivity, BluetoothConnector bluetoothConnector,
-                           ListAdapter listAdapter, Activity activity, Pulse pulse) {
+                           ListAdapter listAdapter,  Pulse pulse) {
         this.viewActivity = viewActivity;
         this.bluetoothConnector = bluetoothConnector;
         this.listAdapter = listAdapter;
-        this.activity = activity;
         this.pulse = pulse;
         this.asyncTaskConnect = null;
     }
@@ -77,13 +74,13 @@ public class ReceiverService extends BroadcastReceiver {
                                 listAdapter = new ViewController().getListAdapter(
                                         context, bluetoothConnector, BT_SEARCH);
                                 viewActivity.setListDevices(listAdapter);
-                                asyncTaskConnect = new AsyncTaskConnect(device,viewActivity,
-                                        bluetoothConnector, pulse, activity);
+                                asyncTaskConnect = new AsyncTaskConnect(device, bluetoothConnector,
+                                        pulse, viewActivity);
                                 asyncTaskConnect.execute();
                             }catch (BluetoothException e){
                                 e.printStackTrace();
-                                new ViewController().viewWarning(activity, viewActivity,
-                                        e.getMessage());
+                                new ViewController().viewWarning(viewActivity.getActivity(),
+                                        viewActivity, e.getMessage());
                             }
                         }
                     }

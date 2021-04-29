@@ -1,6 +1,5 @@
 package by.bsuir.health.bean;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
 
@@ -12,36 +11,35 @@ import by.bsuir.health.ui.ViewActivity;
  * @author Pablo on 15.03.2021
  * @project Health
  */
-public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.ConnectedThread> {
+
+public class AsyncTaskConnect extends AsyncTask<Void, Void, Void> {
+
     private BluetoothDevice device;
     private ViewActivity viewActivity;
     private BluetoothConnector bluetoothConnector;
     private Pulse pulse;
-    private Activity activity;
 
-    public AsyncTaskConnect(BluetoothDevice device, ViewActivity viewActivity,
-                            BluetoothConnector bluetoothConnector, Pulse pulse, Activity activity) {
+    public AsyncTaskConnect(BluetoothDevice device, BluetoothConnector bluetoothConnector,
+                            Pulse pulse, ViewActivity viewActivity) {
         this.device = device;
         this.viewActivity = viewActivity;
         this.bluetoothConnector = bluetoothConnector;
         this.pulse = pulse;
-        this.activity = activity;
     }
 
     @Override
-    protected BluetoothConnector.ConnectedThread doInBackground(Void... params){
-        BluetoothConnector.ConnectedThread connectedThread = null;
+    protected Void doInBackground(Void... params){
         try {
-            connectedThread = new BluetoothConnectorController().connectToExisting(
-                    bluetoothConnector, device);
+            BluetoothConnector.ConnectedThread connectedThread =
+                    new BluetoothConnectorController().connectToExisting(bluetoothConnector, device);
             pulse.getPreference().saveMacAddress(device.getAddress());
             pulse.setConnectedThread(connectedThread);
         } catch (BluetoothException e) {
             e.printStackTrace();
-            new ViewController().viewWarning(activity, viewActivity, e.getMessage());
+            new ViewController().viewWarning(viewActivity.getActivity(), viewActivity, e.getMessage());
             this.cancel(true);
         }
-        return connectedThread;
+        return null;
     }
 
     @Override
@@ -59,9 +57,9 @@ public class AsyncTaskConnect extends AsyncTask<Void, Void, BluetoothConnector.C
     }
 
     @Override
-    protected void onPostExecute(BluetoothConnector.ConnectedThread connectedThread) {
-        super.onPostExecute(connectedThread);
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
         viewActivity.getProgressDialog().dismiss();
-        viewActivity.showFrameLedControls();
+        viewActivity.showFrameControls();
     }
 }

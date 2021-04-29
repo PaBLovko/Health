@@ -22,6 +22,7 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
     public static final String KEY_OPERATION_MODE       = "key_operating_mode";
     public static final String KEY_LAST_CONNECT_DEVICE  = "key_last_connect_device";
     public static final String KEY_MAC_ADDRESS          = "key_mac_address";
+    public static final String KEY_FILTER_MODE          = "key_filter_mode";
 
     private final SharedPreferences sharedPreferences;
 
@@ -29,12 +30,14 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
     private int     pointsCount;
     private String  operationMode;
     private boolean lastConnectDevice;
+    private boolean filterMode;
 
     public PrefModel(Context context) {
-        this.delayTimer                 = 10;
+        this.delayTimer                 = 60000;
         this.pointsCount                = 300;
         this.operationMode              = "";
         this.lastConnectDevice          = false;
+        this.filterMode                 = false;
         this.sharedPreferences = context.getSharedPreferences(KEY_MAC_ADDRESS, MODE_PRIVATE);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.registerOnSharedPreferenceChangeListener(this);
@@ -67,6 +70,14 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
         this.lastConnectDevice = lastConnectDevice;
     }
 
+    public boolean isFilterMode() {
+        return filterMode;
+    }
+
+    public void setFilterMode(boolean filterMode) {
+        this.filterMode = filterMode;
+    }
+
     public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
     }
@@ -76,6 +87,7 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
         onSharedPreferenceChanged(preferences, KEY_POINTS_COUNT);
         onSharedPreferenceChanged(preferences, KEY_OPERATION_MODE);
         onSharedPreferenceChanged(preferences, KEY_LAST_CONNECT_DEVICE);
+        onSharedPreferenceChanged(preferences, KEY_FILTER_MODE);
     }
 
     public void saveMacAddress(String macAddressNow){
@@ -93,7 +105,7 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
         String string;
         switch (key) {
             case KEY_DELAY_TIMER:
-                string = preferences.getString(key, "10");
+                string = preferences.getString(key, "60000");
                 assert string != null;
                 setDelayTimer(Integer.parseInt(string));
                 for (OnDelayChangedListener l : listeners) {
@@ -116,6 +128,9 @@ public class PrefModel implements SharedPreferences.OnSharedPreferenceChangeList
                 break;
             case KEY_LAST_CONNECT_DEVICE:
                 setLastConnectDevice(preferences.getBoolean(key, false));
+                break;
+            case KEY_FILTER_MODE:
+                setFilterMode(preferences.getBoolean(key, false));
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + key);

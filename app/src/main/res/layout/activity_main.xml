@@ -9,102 +9,30 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <Switch
-        android:id="@+id/switch_enable_bt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/bluetooth_on_off"
-        android:textSize="18sp" />
-
-    <FrameLayout
-        android:id="@+id/frame_message"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/tv_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/bluetooth_off"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-    </FrameLayout>
-
     <LinearLayout
-        android:id="@+id/frame_control"
+        android:id="@+id/frame_result"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:visibility="gone">
 
-        <Button
-            android:id="@+id/btn_enable_search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:text="@string/start_search" />
-
-        <ProgressBar
-            android:id="@+id/pb_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/gv_result"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:indeterminate="true"
-            android:visibility="gone" />
-
-        <ListView
-            android:id="@+id/lv_device"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="8dp" />
+            android:layout_height="match_parent" />
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/frame_storage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <ListView
-            android:id="@+id/lv_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="8dp" />
-    </LinearLayout>
-
-<!--    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-
-<!--        android:padding="4dp"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content">-->
-<!--        <ImageView-->
-<!--            android:id="@+id/iv_icon"-->
-<!--            android:src="@drawable/ic_bluetooth_bounded_device"-->
-<!--            android:layout_alignParentEnd="true"-->
-<!--            android:layout_centerInParent="true"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:contentDescription="@string/todo" />-->
-
-<!--    </RelativeLayout>-->
 
     <RelativeLayout
-        android:id="@+id/frameLedControls"
+        android:id="@+id/frame_controls"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <Button
-            android:id="@+id/btn_storage"
+            android:id="@+id/btn_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:text="@string/storage" />
+            android:text="@string/save" />
 
         <Button
             android:id="@+id/btn_start"
@@ -160,4 +88,72 @@
             android:layout_below="@+id/switch_led"
             android:layout_marginTop="8dp" />
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/frame_storage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ListView
+            android:id="@+id/lv_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+    <Switch
+        android:id="@+id/switch_enable_bt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bluetooth_on_off"
+        android:textSize="18sp" />
+
+    <FrameLayout
+        android:id="@+id/frame_message"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/bluetooth_off"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/frame_controllers"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_enable_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:text="@string/start_search" />
+
+        <ProgressBar
+            android:id="@+id/pb_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <ListView
+            android:id="@+id/lv_device"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
 </LinearLayout>
