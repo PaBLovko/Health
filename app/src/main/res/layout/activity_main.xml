@@ -25,13 +25,13 @@
         android:id="@+id/frame_controls"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/btn_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="5dp"
             android:text="@string/save" />
 
         <Button
@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="5dp"
             android:text="@string/start" />
 
         <Button
@@ -47,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="5dp"
             android:layout_weight="0"
             android:text="@string/disconnect" />
 
@@ -59,7 +59,7 @@
             android:layout_marginTop="8dp"
             android:editable="false"
             android:gravity="bottom"
-            android:lines="2"
+            android:lines="3"
             android:scrollbars="vertical" />
 
         <Switch
@@ -114,7 +114,7 @@
         android:id="@+id/frame_message"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/tv_message"

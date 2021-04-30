@@ -52,8 +52,17 @@ public class ListDimensions extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = inflater.inflate(RESOURCE_LAYOUT, parent, false);
         DatabaseDimension dimension = databaseDimensions.get(position);
-        String textDimension = textDimensions.get(position);
         if (dimension != null) {
+            String textDimension;
+            if (dimension.getMode().equals("ecg")){
+                textDimension = textDimensions.get(position)+
+                        "\npulse: "+dimension.getPulse()+"\nextrasystole: "+
+                        dimension.getNumOfExtrasystole();
+            }else {
+                textDimension = textDimensions.get(position)+
+                        "\npulse: "+dimension.getPulse()+"\nspo: "+
+                        dimension.getSpo();
+            }
             String data = dimension.getTime()+" "+dimension.getDate();
             int iconType = dimension.getDescription();
             ((TextView) view.findViewById(R.id.tv_name)).setText(data);

@@ -16,11 +16,11 @@ public class DatabaseHelper {
     private static DatabaseDimension databaseDimension;
     public DatabaseHelper(){}
 
-    public static void SaveToDB(String date, String time, ArrayList<Integer> data,
-                                int pulse, int description, int numOfExtrasystole){
+    public static void SaveToDB(String date, String time, ArrayList<Integer> data, int pulse,
+                                int description, int numOfExtrasystole, int spo, String mode){
         String json = fromArrayToJson(data);
         databaseDimension = new DatabaseDimension(
-                date, time, json, pulse, description, numOfExtrasystole);
+                date, time, json, pulse, description, numOfExtrasystole, spo, mode);
         databaseDimension.save();
     }
 

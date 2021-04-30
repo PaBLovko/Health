@@ -8,21 +8,24 @@ import java.util.Collections;
  * @project Health
  */
 public class SignalAnalysis {
-    private ArrayList<Integer> Data;
+    private ArrayList<Integer> data;
     private ArrayList<Integer> listOfIndex;
     private int numOfExtrasystole;
     private int numOfExtrasystoleInRow;
     private int pulse;
-    private int mode;
+    private int description;
     private boolean isAnalyzed;
+    private String mode;
+    private int spo;
 
     public SignalAnalysis(){
-        this.Data = new ArrayList<>();
+        this.data = new ArrayList<>();
         this.listOfIndex = new ArrayList<>();
     }
 
-    public void setData(ArrayList<Integer> data) {
-        Data = data;
+    public void setData(ArrayList<Integer> data, String mode) {
+        this.data = data;
+        this.mode = mode;
     }
 
     public int getPulse(){
@@ -34,8 +37,20 @@ public class SignalAnalysis {
     public int getNumOfExtrasystoleInRow() {
         return numOfExtrasystoleInRow;
     }
-    public int getMode() {
+    public int getDescription() {
+        return description;
+    }
+
+    public String getMode() {
         return mode;
+    }
+
+    public int getSpo() {
+        return spo;
+    }
+
+    public void setDescription(int description) {
+        this.description = description;
     }
 
     public boolean isAnalyzed() {
@@ -43,11 +58,11 @@ public class SignalAnalysis {
     }
 
     private void analysePulse(){
-        float maxVal = Collections.max(Data);
+        float maxVal = Collections.max(data);
         float percentOfMaxVal = maxVal - (maxVal*30)/100;
         pulse = 0;
-        for(int i = 0; i< Data.size()-2; i++){
-            if((Data.get(i+1)- Data.get(i))*(Data.get(i+2)- Data.get(i+1))<=0&& Data
+        for(int i = 0; i< data.size()-2; i++){
+            if((data.get(i+1)- data.get(i))*(data.get(i+2)- data.get(i+1))<=0&& data
                     .get(i+1)>=percentOfMaxVal){
                 pulse++;
                 listOfIndex.add(i+1);
@@ -91,14 +106,23 @@ public class SignalAnalysis {
 
     public int analyseData(){
         analysePulse();
-        boolean state = analyseExtrasystole();
-        mode = 0;
-        if (pulse < 50) mode = 1;
-        else if (pulse > 120) mode = 2;
-        if (!state) mode = 3;
+        boolean state;
+        if (mode.equals("ecg")){
+             state = analyseExtrasystole();
+        }else  state = analyseSpo();
+        description = 0;
+        if (pulse < 50)
+            description = 1;
+        else if (pulse > 120)
+            description = 2;
+        if (!state) description = 3;
         isAnalyzed = true;
-        return mode;
+        return description;
     }
 
+    private boolean analyseSpo() {
+        //TODO
+        return false;
+    }
 }
 

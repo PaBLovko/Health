@@ -15,11 +15,13 @@ public class DatabaseDimension extends SugarRecord {
     private int pulse;
     private int description;
     private int numOfExtrasystole;
+    private int spo;
+    private String mode;
 
     public DatabaseDimension(){}
 
     public DatabaseDimension(String date, String time, String data,  int pulse, int description,
-                             int numOfExtrasystole){
+                             int numOfExtrasystole, int spo, String mode){
         super();
         this.date = date;
         this.time = time;
@@ -27,6 +29,8 @@ public class DatabaseDimension extends SugarRecord {
         this.description = description;
         this.numOfExtrasystole = numOfExtrasystole;
         this.pulse = pulse;
+        this.spo = spo;
+        this.mode = mode;
     }
     public void setDate(String date){
         this.date = date;
@@ -63,6 +67,20 @@ public class DatabaseDimension extends SugarRecord {
     }
     public void setDescription(int description) {
         this.description = description;
+    }
+    public int getSpo() {
+        return spo;
+    }
+    public void setSpo(int spo) {
+        this.spo = spo;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 }
 

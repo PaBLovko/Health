@@ -47,6 +47,7 @@ public class ItemClickService implements AdapterView.OnItemClickListener {
             }
         }
         if (parent.equals(viewActivity.getListImages())){
+            viewActivity.getGvResult().removeAllSeries();
             LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
             List<DatabaseDimension> databaseDimensionList = DatabaseHelper.getPreparedData();
             DatabaseDimension dimension =

@@ -48,7 +48,6 @@ public class ClickService implements View.OnClickListener{
             }
             viewActivity.showFrameControllers();
         } else if (v.equals(viewActivity.getBtnStart())){
-            //TODO START TIMER (1 MIN)
             pulse.startTimer();
             pulse.counter();
         } else if (v.equals(viewActivity.getBtnSave())){
@@ -59,9 +58,10 @@ public class ClickService implements View.OnClickListener{
                 @SuppressLint("SimpleDateFormat")
                 SimpleDateFormat formatForTime = new SimpleDateFormat("HH:mm E");
                 DatabaseHelper.SaveToDB(formatForDate.format(date),formatForTime.format(date),
-                        pulse.getChart().getData(), pulse.getSignalAnalysis().getMode(),
-                        pulse.getSignalAnalysis().getPulse(),
-                        pulse.getSignalAnalysis().getNumOfExtrasystoleInRow());
+                        pulse.getChart().getData(), pulse.getSignalAnalysis().getPulse(),
+                        pulse.getSignalAnalysis().getDescription(),
+                        pulse.getSignalAnalysis().getNumOfExtrasystoleInRow(),
+                        pulse.getSignalAnalysis().getSpo(), pulse.getSignalAnalysis().getMode());
                 new ViewController().viewToastShow(viewActivity.getActivity(),
                         "The analysis is saved");
             }else new ViewController().viewToastShow(viewActivity.getActivity(),

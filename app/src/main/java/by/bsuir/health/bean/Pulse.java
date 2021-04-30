@@ -2,7 +2,6 @@ package by.bsuir.health.bean;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 
 import java.util.HashMap;
@@ -90,18 +89,16 @@ public class Pulse {
     }
 
     public void counter(){
-        if (!doAnalysis) return;
         final Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
+                if (!doAnalysis) return;
                 cancelTimer();
-                signalAnalysis.setData(chart.getData());
+                signalAnalysis.setData(chart.getData(),
+                        new ViewController().translate(preference.getOperationMode()));
                 signalAnalysis.analyseData();
-                MovementMethod movementMethod = new ScrollingMovementMethod();
-                viewActivity.setEtConsoleAndMovementMethod(signalAnalysis.getMode()+" "+
-                        signalAnalysis.getPulse()+" "+
-                        signalAnalysis.getNumOfExtrasystole(), movementMethod);
+                new ViewController().setEtConsole(viewActivity, signalAnalysis);
             }
         },preference.getDelayTimer());
     }

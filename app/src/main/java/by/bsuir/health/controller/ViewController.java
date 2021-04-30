@@ -5,6 +5,9 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.method.ScrollingMovementMethod;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -13,6 +16,7 @@ import java.util.List;
 import by.bsuir.health.MainActivity;
 import by.bsuir.health.R;
 import by.bsuir.health.bean.BluetoothConnector;
+import by.bsuir.health.bean.SignalAnalysis;
 import by.bsuir.health.dao.DatabaseDimension;
 import by.bsuir.health.dao.DatabaseHelper;
 import by.bsuir.health.exeption.bluetooth.BluetoothException;
@@ -39,6 +43,15 @@ public class ViewController {
             public void run() {
                 viewActivity.getProgressDialog().dismiss();
                 Toast.makeText(activity, message,Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void setEtConsole(final ViewActivity viewActivity, final SignalAnalysis signalAnalysis){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                setResultInView(viewActivity, signalAnalysis);
             }
         });
     }
@@ -108,9 +121,9 @@ public class ViewController {
         return new ListAdapter(context, bluetoothConnector.getBluetoothDevices(), iconType);
     }
 
-    public ListDimensions getListDimension(Context context,
+    public ListDimensions getListDimension(Activity activity,
                                            List<DatabaseDimension> databaseDimensions){
-        List<String> textDescription = getTextDescription(context, databaseDimensions);
+        List<String> textDescription = getTextOfArrayDescription(activity, databaseDimensions);
         for (DatabaseDimension databaseDimension : databaseDimensions){
             switch (databaseDimension.getDescription()) {
                 case 0:
@@ -125,27 +138,49 @@ public class ViewController {
                     break;
             }
         }
-        return new ListDimensions(context, databaseDimensions, textDescription);
+        return new ListDimensions(activity, databaseDimensions, textDescription);
     }
 
-    public List<String> getTextDescription(Context context,
-                                           List<DatabaseDimension> databaseDimensions){
+    public List<String> getTextOfArrayDescription(Activity activity,
+                                                  List<DatabaseDimension> databaseDimensions){
         List<String> textDescription = new ArrayList<>();
         for (DatabaseDimension databaseDimension : databaseDimensions){
-            switch (databaseDimension.getDescription()) {
-                case 0:
-                    textDescription.add(context.getString(R.string.done));
-                    break;
-                case 1:
-                case 2:
-                    textDescription.add(context.getString(R.string.warning));
-                    break;
-                default:
-                    textDescription.add(context.getString(R.string.error));
-                     break;
-            }
+            textDescription.add(getTextDescription(activity, databaseDimension.getDescription()));
         }
         return textDescription;
+    }
+
+    public String getTextDescription(Activity activity, int description){
+        switch (description) {
+            case 0:
+                return activity.getString(R.string.done);
+            case 1:
+            case 2:
+                return activity.getString(R.string.warning);
+            default:
+                return activity.getString(R.string.error);
+        }
+    }
+
+    public void setResultInView(ViewActivity viewActivity, SignalAnalysis signalAnalysis){
+        String text;
+        if (signalAnalysis.getMode().equals("ecg")){
+            text = getTextDescription(
+                    viewActivity.getActivity(), signalAnalysis.getDescription()) + "\npulse: " +
+                    signalAnalysis.getPulse() + "\nextrasystole: " +
+                    signalAnalysis.getNumOfExtrasystoleInRow();
+        } else {
+            text = getTextDescription(
+                    viewActivity.getActivity(), signalAnalysis.getDescription()) + "\npulse: " +
+                    signalAnalysis.getPulse() + "\nspo: " + signalAnalysis.getSpo();
+        }
+        viewActivity.setEtConsoleAndMovementMethod(text, new ScrollingMovementMethod());
+    }
+
+    public String translate(String mode){
+        if (mode.equals("Пульсометр") || mode.equals("Кардиомонитор"))
+            return "ecg";
+        else return "spo";
     }
 
     public void setProgressDialog(Context context, ProgressDialog progressDialog){
