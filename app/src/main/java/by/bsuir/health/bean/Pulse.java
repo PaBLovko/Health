@@ -96,7 +96,8 @@ public class Pulse {
                 if (!doAnalysis) return;
                 cancelTimer();
                 signalAnalysis.setData(chart.getData(),
-                        new ViewController().translate(preference.getOperationMode()));
+                        new ViewController().translate(preference.getOperationMode()),
+                        preference.getDelayTimer());
                 signalAnalysis.analyseData();
                 new ViewController().setEtConsole(viewActivity, signalAnalysis);
             }

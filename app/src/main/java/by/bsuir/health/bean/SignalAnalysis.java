@@ -17,15 +17,17 @@ public class SignalAnalysis {
     private boolean isAnalyzed;
     private String mode;
     private int spo;
+    private int measurementTime;
 
     public SignalAnalysis(){
         this.data = new ArrayList<>();
         this.listOfIndex = new ArrayList<>();
     }
 
-    public void setData(ArrayList<Integer> data, String mode) {
+    public void setData(ArrayList<Integer> data, String mode, int measurementTime) {
         this.data = data;
         this.mode = mode;
+        this.measurementTime = measurementTime;
     }
 
     public int getPulse(){
@@ -68,7 +70,7 @@ public class SignalAnalysis {
                 listOfIndex.add(i+1);
             }
         }
-        pulse=pulse*2;
+        pulse=pulse*60*1000/measurementTime;//TODO
     }
 
     private boolean analyseExtrasystole(){
@@ -78,9 +80,9 @@ public class SignalAnalysis {
         numOfExtrasystole = 0;
         int average = getAverageSize(len);
         for (int i = 1;i<listOfIndex.size()-1;i++) {
-            int val1 = listOfIndex.get(i);
-            int val2 = listOfIndex.get(i+1);
-            int btw = val2-val1;
+            int valueFirst = listOfIndex.get(i);
+            int valueSecond = listOfIndex.get(i+1);
+            int btw = valueSecond-valueFirst;
             if(btw>average+10||btw<average-10){
                 numOfExtrasystole++;
                 tempOfExtrasystoleInRow++;

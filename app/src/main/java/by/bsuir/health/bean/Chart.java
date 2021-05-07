@@ -44,10 +44,10 @@ public class Chart{
         this.graphView.getViewport().setMinX(0);
         this.graphView.getViewport().setMaxX(MaxX);
         this.graphView.getViewport().setXAxisBoundsManual(true);
-        graphView.getViewport().setScalable(true);
-        graphView.getViewport().setScalableY(true);
-        graphView.getViewport().setScrollable(true);
-        graphView.getViewport().setScrollableY(true);
+        this.graphView.getViewport().setScalable(true);
+        this.graphView.getViewport().setScalableY(true);
+        this.graphView.getViewport().setScrollable(true);
+        this.graphView.getViewport().setScrollableY(true);
     }
 
     private void deleteData(){
