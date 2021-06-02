@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="by.bsuir.health">
+    package="by.bsuir.kazhamiakin">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -22,7 +22,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-            android:name="MainActivity"
+            android:name="by.bsuir.kazhamiakin.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +37,6 @@
         <!--        <service-->
 <!--            android:name="ForegroundService"-->
 <!--            android:foregroundServiceType="location"/>-->
-        <activity android:name=".dao.preference.SettingsActivity" />
+        <activity android:name="by.bsuir.kazhamiakin.dao.preference.SettingsActivity" />
     </application>
 </manifest>
